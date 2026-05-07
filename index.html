@@ -59,13 +59,19 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 .summary{background:#f8fafc;border:1px dashed var(--line);border-radius:14px;padding:12px;line-height:1.55}
 .timeTable{width:100%;border-collapse:collapse}.timeTable th,.timeTable td{border:1px solid var(--line);padding:8px}.timeTable th{background:#e5e7eb;text-align:left}
 .saved{display:none;background:var(--okbg);border:1px solid #86efac;color:var(--ok);border-radius:13px;padding:10px;margin-top:10px;font-weight:900}
-@media(max-width:850px){.grid2,.grid3,.inlinechecks,.nav{grid-template-columns:1fr}.head h2{font-size:19px}}
+@media(max-width:850px){
+  .grid2,.grid3,.inlinechecks{grid-template-columns:1fr}
+  .nav{grid-template-columns:repeat(4,1fr)}
+  .nav a{font-size:10px;padding:7px 3px;border-radius:9px}
+  .nav .savebtn{font-size:15px;padding:13px 10px;border-radius:13px}
+  .head h2{font-size:19px}
+}
 </style>
 </head>
 <body>
 
 <div class="top">
-  <div class="title">VPK UAS – mobile stable beta</div>
+  <div class="title">VPK UAS – mobile stable beta v6</div>
   <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
   <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
   <div class="nav">
@@ -73,7 +79,7 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
     <a href="#risk">Riskinarviointi</a>
     <a href="#plan">Lentosuunnitelma</a>
     <a href="#log">Päiväkirja</a>
-    <button type="button" id="manualSaveBtn">Tallenna nyt</button>
+    <button type="button" id="manualSaveBtn" class="savebtn">Tallenna nyt</button>
   </div>
 </div>
 
@@ -388,10 +394,10 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
       <div class="field"><label>Laskupaikka</label><input id="landingPlace"></div>
       <div class="field"><label>Lähtöpaikan GPS</label><input id="planStartGps" readonly placeholder="Ei haettu"></div>
       <div class="field"><label>Laskupaikan GPS</label><input id="planLandingGps" readonly placeholder="Ei haettu"></div>
-      <div class="field"><label>VARA1</label><input></div>
-      <div class="field"><label>HÄTÄ1</label><input></div>
-      <div class="field"><label>VARA2</label><input></div>
-      <div class="field"><label>HÄTÄ2</label><input></div>
+      <div class="field"><label>VARA1</label><input id="vara1"></div>
+      <div class="field"><label>HÄTÄ1</label><input id="hata1"></div>
+      <div class="field"><label>VARA2</label><input id="vara2"></div>
+      <div class="field"><label>HÄTÄ2</label><input id="hata2"></div>
     </div>
 
     <div class="sectiontitle">Kellonajat</div>
@@ -421,12 +427,12 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
       <div class="field"><label>Lennon lähtö- ja laskupaikan GPS</label><input id="logGps" readonly placeholder="Ei haettu"></div>
       <div class="field"><label>Ilma-aluksen päällikkö</label><input id="logCaptain"></div>
       <div class="field"><label>Ilma-aluksen tai ilma-alusjärjestelmän valmistaja ja malli</label><input id="logAircraft"></div>
-      <div class="field"><label>Alkamisaika</label><input type="time"></div>
-      <div class="field"><label>Päättymisaika</label><input type="time"></div>
+      <div class="field"><label>Alkamisaika</label><input type="time" id="logStart"></div>
+      <div class="field"><label>Päättymisaika</label><input type="time" id="logEnd"></div>
     </div>
     <div class="inlinechecks"><label><input type="checkbox" id="logVLOS"> VLOS – näköyhteydessä lennättäminen</label><label><input type="checkbox" id="logEVLOS"> EVLOS – laajennettu näköyhteys tähystäjän avulla</label><label><input type="checkbox" id="logBVLOS"> BVLOS – näköyhteyden ulkopuolella lennättäminen</label></div>
-    <div class="grid2"><div class="field"><label>Maksimilentokorkeus</label><input type="number"></div><div class="field"><label>Lennetty lähempänä kuin 50 metrin etäisyydellä ihmisjoukosta</label><input></div><div class="field"><label>Lentotehtävän luonne</label><input id="logMissionNature" readonly></div></div>
-    <div class="field"><label>Muut lennolla sattuneet erityiset tapahtumat</label><textarea></textarea></div>
+    <div class="grid2"><div class="field"><label>Maksimilentokorkeus</label><input type="number" id="logMaxAlt"></div><div class="field"><label>Lennetty lähempänä kuin 50 metrin etäisyydellä ihmisjoukosta</label><input id="logNearCrowd"></div><div class="field"><label>Lentotehtävän luonne</label><input id="logMissionNature" readonly></div></div>
+    <div class="field"><label>Muut lennolla sattuneet erityiset tapahtumat</label><textarea id="logEvents"></textarea></div>
   </div>
 </section>
 
@@ -446,33 +452,7 @@ function aircraftKey(){return safe(val("aircraft")||val("startAircraft")).replac
 function taskName(){return `${val("date")||val("startDate")}_${(val("time")||val("startTime")||"00:00").replace(":","")}_${safe(val("place")||val("startPlace"))}_${aircraftKey()}`;}
 function updateName(){ $("filename").textContent = "Tehtävä: " + taskName(); }
 
-function calcRisk(){
- let total=0;
- const cards = document.querySelectorAll("#riskRows .riskcard");
- cards.forEach(card=>{
-  const sel = card.querySelector("select");
-  const scoreEl = card.querySelector(".score");
-  if(!sel || !scoreEl) return;
-  const raw = (sel.value || "").trim().toUpperCase();
-  let score = 0;
-  if(raw === "MATALA") score = 1;
-  else if(raw === "KESKI") score = 3;
-  else if(raw === "KORKEA") score = 5;
-  else score = 0;
-  sel.classList.remove("r0","r1","r3","r5");
-  sel.classList.add("r"+score);
-  scoreEl.textContent = String(score);
-  total += score;
- });
- const totalEl = $("riskTotal");
- if(totalEl) totalEl.textContent = String(total);
- const k = $("riskKpi");
- if(k){
-  k.classList.remove("green","yellow","red");
-  k.classList.add(total < 20 ? "green" : (total > 40 ? "red" : "yellow"));
- }
- try { autosave(); } catch(e) {}
-}
+function calcRisk(){ return recalcRisk(); }
 function toMin(t){if(!t)return null; const p=t.split(":").map(Number); if(p.length<2||isNaN(p[0])||isNaN(p[1]))return null; return p[0]*60+p[1];}
 function calcMinutes(){
  let total=0; const ups=[...document.querySelectorAll(".upTime")], downs=[...document.querySelectorAll(".downTime")];
@@ -584,13 +564,11 @@ function getChecklistData(){
 
 function getRiskSelection(index){
  const ids=["riskTehtava","riskToimintaAlue","riskFyysisetEsteet","riskIhmismaara","riskSignaalihairiot","riskIlmatila","riskTuuli","riskLampotila","riskJaaminen","riskNakyvyys","riskLaitteisto","riskLentaja"];
- const el=$(ids[index]);
- return el ? el.value : "";
+ return riskSelectValue(ids[index]);
 }
 function getRiskScore(index){
  const ids=["riskTehtava","riskToimintaAlue","riskFyysisetEsteet","riskIhmismaara","riskSignaalihairiot","riskIlmatila","riskTuuli","riskLampotila","riskJaaminen","riskNakyvyys","riskLaitteisto","riskLentaja"];
- const el=$(ids[index]);
- return el ? String(riskMap[el.value]||0) : "";
+ return String(riskSelectScore(ids[index]));
 }
 
 function buildSections(){
@@ -668,7 +646,7 @@ function buildSections(){
   RiskiLaitteistonSoveltuvuusPisteet: getRiskScore(10),
   RiskiLentajanSoveltuvuus: getRiskSelection(11),
   RiskiLentajanSoveltuvuusPisteet: getRiskScore(11),
-  Kokonaisriski: $("riskTotal") ? $("riskTotal").textContent : "",
+  Kokonaisriski: String(recalcRisk()),
   RiskienVahentaminen: val("riskReduction"),
   MaksimiLentokorkeus: val("maxAlt"),
   MinimiLentokorkeus: val("minAlt"),
@@ -690,10 +668,10 @@ function buildSections(){
   Lahtopaikka: val("startPlace2"),
   Laskupaikka: val("landingPlace"),
   LahtoLaskuGPS: gpsText(),
-  Vara1: "",
-  Hata1: "",
-  Vara2: "",
-  Hata2: "",
+  Vara1: val("vara1"),
+  Hata1: val("hata1"),
+  Vara2: val("vara2"),
+  Hata2: val("hata2"),
   ToiminnanAlkaminen: val("operationStart"),
   Nousu1: document.querySelectorAll(".upTime")[0]?.value || "",
   Lasku1: document.querySelectorAll(".downTime")[0]?.value || "",
@@ -715,15 +693,15 @@ function buildSections(){
   GPS: gpsText(),
   IlmaAluksenPaallikko: val("logCaptain"),
   IlmaAluksenValmistajaJaMalli: val("logAircraft"),
-  AlkamisAika: "",
-  PaattymisAika: "",
+  AlkamisAika: val("logStart"),
+  PaattymisAika: val("logEnd"),
   VLOS: isChecked("logVLOS"),
   EVLOS: isChecked("logEVLOS"),
   BVLOS: isChecked("logBVLOS"),
-  Maksimilentokorkeus: "",
-  LahempanaKuin50mIhmisjoukosta: "",
+  Maksimilentokorkeus: val("logMaxAlt"),
+  LahempanaKuin50mIhmisjoukosta: val("logNearCrowd"),
   LentotehtavanLuonne: val("logMissionNature"),
-  ErityisetTapahtumat: ""
+  ErityisetTapahtumat: val("logEvents")
  };
 
  return {
@@ -788,18 +766,18 @@ function queueBackendSave(){
 
 document.addEventListener("DOMContentLoaded",function(){
  const today=new Date().toISOString().slice(0,10); $("startDate").value=today;
-  calcRisk(); updateName();
+  recalcRisk(); updateName();
  $("startBtn").addEventListener("click",startTask);
  $("gpsBtn").addEventListener("click",getGps);
  document.querySelectorAll("#riskRows select").forEach(s=>{
-  s.addEventListener("change",()=>{calcRisk();sync();queueSave();});
-  s.addEventListener("input",()=>{calcRisk();sync();queueSave();});
+  s.addEventListener("change",()=>{rerererererecalcRisk();sync();queueSave();});
+  s.addEventListener("input",()=>{rerererererecalcRisk();sync();queueSave();});
  });
  $("doneBtn").addEventListener("click",done);
  const manualSaveBtn=$("manualSaveBtn"); if(manualSaveBtn) manualSaveBtn.addEventListener("click",()=>saveToBackend("ManualSave"));
  document.querySelectorAll("input,select,textarea").forEach(e=>{
-  e.addEventListener("input",()=>{sync();calcMinutes();autosave();queueBackendSave();});
-  e.addEventListener("change",()=>{sync();calcMinutes();autosave();queueBackendSave();});
+  e.addEventListener("input",()=>{recalcRisk();sync();calcMinutes();autosave();queueBackendSave();});
+  e.addEventListener("change",()=>{recalcRisk();sync();calcMinutes();autosave();queueBackendSave();});
  });
 });
 })();
