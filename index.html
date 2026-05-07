@@ -152,7 +152,10 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
     <label class="checkline"><input type="checkbox"><span>Tarkista propellit ja dronen yleinen kunto.</span></label>
     <label class="checkline"><input type="checkbox"><span>Määritä huollon ja päivitysten tarve.</span></label>
     <label class="checkline"><input type="checkbox"><span>Lataa akut lennon jälkeen ja huolehdi toimintakunnosta seuraavaa tehtävää varten.</span></label>
-    <label class="checkline"><input type="checkbox"><span>Kirjaa lennätystapahtuma omaan lennätyspäiväkirjaan OPS M1-35 kriteerien mukaisesti:</span></label>
+    <label class="checkline"><input type="checkbox" id="openLogCheck"><span>Kirjaa lennätystapahtuma omaan lennätyspäiväkirjaan OPS M1-35 kriteerien mukaisesti:</span></label>
+    <div style="margin-top:10px">
+      <button type="button" id="openLogBtn" disabled class="secondary" style="opacity:0.5">Avaa lentopäiväkirja</button>
+    </div>
   </div>
 </section>
 
@@ -427,6 +430,13 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
     <div class="inlinechecks"><label><input type="checkbox" id="logVLOS"> VLOS – näköyhteydessä lennättäminen</label><label><input type="checkbox" id="logEVLOS"> EVLOS – laajennettu näköyhteys tähystäjän avulla</label><label><input type="checkbox" id="logBVLOS"> BVLOS – näköyhteyden ulkopuolella lennättäminen</label></div>
     <div class="grid2"><div class="field"><label>Maksimilentokorkeus</label><input type="number" id="logMaxAlt"></div><div class="field"><label>Lennetty lähempänä kuin 50 metrin etäisyydellä ihmisjoukosta</label><input id="logNearCrowd"></div><div class="field"><label>Lentotehtävän luonne</label><input id="logMissionNature" readonly></div></div>
     <div class="field"><label>Muut lennolla sattuneet erityiset tapahtumat</label><textarea id="logEvents"></textarea></div>
+
+    <div class="sectiontitle">Tehtävän päättäminen</div>
+    <div class="notice">Päätä tehtävä, kun tiedot ovat valmiit. Jos lentoa ei tehdä tai tehtävä keskeytyy, voit merkitä tehtävän keskeytetyksi ilman lisäselityksiä.</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+      <button type="button" id="finishTaskBtn">Päätä tehtävä ja tallenna lopullisesti</button>
+      <button type="button" id="cancelTaskBtn" class="secondary">Keskeytä tehtävä ja tallenna lopullisesti</button>
+    </div>
   </div>
 </section>
 
@@ -517,12 +527,13 @@ function getGps(){
    sync(); autosave();
  }, err=>{
    if(status) status.textContent="GPS-sijaintia ei saatu. Voit jatkaa ilman sitä.";
- }, {enableHighAccuracy:true, timeout:10000, maximumAge:0});
+ }, {enableHighAccuracy:true, timeout:20000, maximumAge:0});
 }
 
 const API_URL = "https://script.google.com/macros/s/AKfycbyvk92_EjPOskYpLzcj7DsPqsZIbcWFKmDHPJ4NYpwUiR8Fa8Sb4Md3Z_Ko1raHN4REZA/exec";
 let backendSaveTimer = null;
 let lastBackendSave = 0;
+let currentTaskStatus = "Kesken";
 
 function setSaveStatus(text, cls){
  const el=$("saveStatus");
@@ -625,7 +636,7 @@ function buildSections(){
   KaytettavaIlmaAlus: val("aircraft"),
   Virve: val("virve"),
   VHF: val("vhf"),
-  Tila: "Kesken"
+  Tila: currentTaskStatus || "Kesken"
  };
 
  const tarkistuslista = Object.assign({TehtavaNimi:tehtavaNimi}, getChecklistData());
@@ -735,15 +746,17 @@ function buildSections(){
  };
 }
 
-async function saveToBackend(toiminto){
+async function saveToBackend(toiminto, tila){
  if(!val("date") || !val("time") || !val("place")){
   setSaveStatus("Ei tallennettu: aloita tehtävä ensin", "err");
   return false;
  }
+ if(tila) currentTaskStatus = tila;
  const payload={
   action:"saveAll",
   tehtavaNimi:taskName(),
   toiminto:toiminto||"Autosave",
+  tila: currentTaskStatus || "Kesken",
   sections:buildSections(),
   deviceInfo:navigator.platform || "",
   browserInfo:navigator.userAgent || ""
@@ -786,6 +799,45 @@ function queueBackendSave(){
  backendSaveTimer = setTimeout(()=>saveToBackend("Autosave"), 1500);
 }
 
+function finishTask(){
+ currentTaskStatus = "Valmis";
+ saveFlash();
+ saveToBackend("FinalSave", "Valmis");
+ setSaveStatus("Tehtävä merkitty valmiiksi", "ok");
+}
+
+function cancelTask(){
+ currentTaskStatus = "Keskeytetty";
+ saveFlash();
+ saveToBackend("CancelTask", "Keskeytetty");
+ setSaveStatus("Tehtävä merkitty keskeytetyksi", "wait");
+}
+
+function setupOpenLogButton(){
+ const openLogCheck = $("openLogCheck");
+ const openLogBtn = $("openLogBtn");
+ if(!openLogCheck || !openLogBtn) return;
+
+ function updateLogButton(){
+  openLogBtn.disabled = !openLogCheck.checked;
+  openLogBtn.style.opacity = openLogCheck.checked ? "1" : "0.5";
+ }
+
+ openLogCheck.addEventListener("change", ()=>{
+  updateLogButton();
+  autosave();
+  queueBackendSave();
+ });
+
+ openLogBtn.addEventListener("click", ()=>{
+  if(openLogCheck.checked){
+   location.hash = "#log";
+  }
+ });
+
+ updateLogButton();
+}
+
 document.addEventListener("DOMContentLoaded",function(){
  const today=new Date().toISOString().slice(0,10); $("startDate").value=today;
   calcRisk(); updateName();
@@ -797,6 +849,9 @@ document.addEventListener("DOMContentLoaded",function(){
  });
  $("doneBtn").addEventListener("click",done);
  const manualSaveBtn=$("manualSaveBtn"); if(manualSaveBtn) manualSaveBtn.addEventListener("click",()=>saveToBackend("ManualSave"));
+ const finishTaskBtn=$("finishTaskBtn"); if(finishTaskBtn) finishTaskBtn.addEventListener("click",finishTask);
+ const cancelTaskBtn=$("cancelTaskBtn"); if(cancelTaskBtn) cancelTaskBtn.addEventListener("click",cancelTask);
+ setupOpenLogButton();
  document.querySelectorAll("input,select,textarea").forEach(e=>{
   e.addEventListener("input",()=>{sync();calcMinutes();autosave();queueBackendSave();});
   e.addEventListener("change",()=>{sync();calcMinutes();autosave();queueBackendSave();});
