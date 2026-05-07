@@ -59,19 +59,13 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 .summary{background:#f8fafc;border:1px dashed var(--line);border-radius:14px;padding:12px;line-height:1.55}
 .timeTable{width:100%;border-collapse:collapse}.timeTable th,.timeTable td{border:1px solid var(--line);padding:8px}.timeTable th{background:#e5e7eb;text-align:left}
 .saved{display:none;background:var(--okbg);border:1px solid #86efac;color:var(--ok);border-radius:13px;padding:10px;margin-top:10px;font-weight:900}
-@media(max-width:850px){
-  .grid2,.grid3,.inlinechecks{grid-template-columns:1fr}
-  .nav{grid-template-columns:repeat(4,1fr)}
-  .nav a{font-size:10px;padding:7px 3px;border-radius:9px}
-  .nav .savebtn{font-size:15px;padding:13px 10px;border-radius:13px}
-  .head h2{font-size:19px}
-}
+@media(max-width:850px){.grid2,.grid3,.inlinechecks,.nav{grid-template-columns:1fr}.head h2{font-size:19px}}
 </style>
 </head>
 <body>
 
 <div class="top">
-  <div class="title">VPK UAS – mobile stable beta v6</div>
+  <div class="title">VPK UAS – mobile stable beta</div>
   <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
   <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
   <div class="nav">
@@ -79,7 +73,7 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
     <a href="#risk">Riskinarviointi</a>
     <a href="#plan">Lentosuunnitelma</a>
     <a href="#log">Päiväkirja</a>
-    <button type="button" id="manualSaveBtn" class="savebtn">Tallenna nyt</button>
+    <button type="button" id="manualSaveBtn">Tallenna nyt</button>
   </div>
 </div>
 
