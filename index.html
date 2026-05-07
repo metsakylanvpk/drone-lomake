@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VPK UAS testiversio v9</title>
+<style>
+:root{
+  --bg:#eef2f7;--card:#fff;--line:#d4dce8;--ink:#0f172a;--muted:#667085;
+  --primary:#0f172a;--soft:#f8fafc;--ok:#166534;--okbg:#dcfce7;--mid:#92400e;--midbg:#fef3c7;--bad:#991b1b;--badbg:#fee2e2;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.top{position:sticky;top:0;z-index:20;background:#ffffffee;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 12px}
+.title{font-weight:900;font-size:17px}
+.file{font-size:12px;color:var(--muted);word-break:break-word;margin-top:2px}
+.savestatus{font-size:12px;font-weight:900;margin-top:4px}
+.savestatus.ok{color:#166534}
+.savestatus.wait{color:#92400e}
+.savestatus.err{color:#991b1b}
+.nav{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.nav a,.nav button{border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);padding:10px 6px;text-align:center;text-decoration:none;font-weight:800;font-size:12px;cursor:pointer}
+.wrap{max-width:1050px;margin:0 auto;padding:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;margin-bottom:16px;box-shadow:0 8px 22px rgba(15,23,42,.05);overflow:hidden}
+.head{padding:15px 17px;border-bottom:1px solid var(--line);color:#fff}
+.head h2{margin:0;font-size:22px}
+.head.start{background:#111827}.head.check{background:#374151}.head.risk{background:#9a3412}.head.plan{background:#0f766e}.head.log{background:#1e3a8a}
+.body{padding:16px 17px}
+.sectiontitle{margin:20px 0 10px;font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:#334155}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.field label{display:block;font-size:13px;font-weight:800;margin-bottom:5px}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px;background:#fff;color:var(--ink);font:inherit}
+textarea{min-height:90px}
+input[readonly]{background:#f3f4f6;color:#475569}
+button,.btn{border:none;background:var(--primary);color:#fff;border-radius:13px;padding:11px 13px;font-weight:900;text-decoration:none;display:inline-block;cursor:pointer}
+button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.notice{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:14px;padding:11px;margin-bottom:12px}
+.warn{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:14px;padding:11px;margin-bottom:12px}
+.checkline{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:13px;background:var(--soft);padding:10px 11px;margin-bottom:8px}
+.checkline input{width:auto;margin-top:3px}
+.inlinechecks{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.inlinechecks label{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:13px;background:var(--soft);padding:10px}
+.inlinechecks input{width:auto}.inlinechecks a{color:#0f172a;font-weight:900;text-decoration:underline}
+.hidden{display:none!important}
+.riskcards{display:grid;gap:10px}
+.riskcard{border:1px solid var(--line);border-radius:15px;background:#fff;padding:12px}
+.riskname{font-weight:900;margin-bottom:8px}
+.riskrow{display:grid;grid-template-columns:1fr 78px;gap:10px}
+.score{border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:10px;text-align:center;font-weight:900}
+.riskselect{font-weight:900}
+.riskselect.r0{background:#dcfce7;color:#166534;border-color:#86efac}
+.riskselect.r1{background:#ecfccb;color:#3f6212;border-color:#bef264}
+.riskselect.r3{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+.riskselect.r5{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+.kpi{border:1px solid var(--line);border-radius:15px;padding:12px;margin-top:12px;background:#f8fafc}
+.kpi .label{font-size:12px;color:var(--muted);font-weight:800}.kpi .value{font-size:32px;font-weight:900}
+.kpi.green{background:var(--okbg);border-color:#86efac;color:var(--ok)}.kpi.yellow{background:var(--midbg);border-color:#fcd34d;color:var(--mid)}.kpi.red{background:var(--badbg);border-color:#fca5a5;color:var(--bad)}
+.summary{background:#f8fafc;border:1px dashed var(--line);border-radius:14px;padding:12px;line-height:1.55}
+.timeTable{width:100%;border-collapse:collapse}.timeTable th,.timeTable td{border:1px solid var(--line);padding:8px}.timeTable th{background:#e5e7eb;text-align:left}
+.saved{display:none;background:var(--okbg);border:1px solid #86efac;color:var(--ok);border-radius:13px;padding:10px;margin-top:10px;font-weight:900}
+@media(max-width:850px){.grid2,.grid3,.inlinechecks,.nav{grid-template-columns:1fr}.head h2{font-size:19px}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="title">VPK UAS – drone-lomake beta</div>
+  <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
+  <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
+  <div class="nav">
+    <a href="#checklist">Tarkistuslista</a>
+    <a href="#risk">Riskinarviointi</a>
+    <a href="#plan">Lentosuunnitelma</a>
+    <a href="#log">Päiväkirja</a>
+    <button type="button" id="manualSaveBtn">Tallenna nyt</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section id="start" class="card">
+  <div class="head start"><h2>Aloita uusi tehtävä</h2></div>
+  <div class="body">
+    <div class="notice">QR-koodi avaa uuden tyhjän tehtävän. Täytä ensin päivämäärä, kellonaika ja paikka. Näistä muodostuu tehtävän nimi, jonka alle kaikki muutokset tallentuvat automaattisesti. GPS haetaan tarvittaessa myöhemmin lentosuunnitelmaosiossa.</div>
+    <div class="grid3">
+      <div class="field"><label>Päivämäärä</label><input type="date" id="startDate"></div>
+      <div class="field"><label>Kellonaika</label><input type="time" id="startTime"></div>
+      <div class="field"><label>Paikka</label><input id="startPlace" placeholder="esim. Klaukkala"></div>
+      <div class="field"><label>Käytettävä drone</label><select id="startAircraft"><option selected>DJI Matrice 4TD</option><option>DJI Mini 3</option></select></div>
+    </div>
+    <div style="margin-top:12px">
+      <button type="button" id="startBtn">Aloita tehtävä</button>
+      <a class="btn secondary" href="#checklist">Jos nappi ei toimi, avaa lomake tästä</a>
+    </div>
+    <div id="startError" class="warn hidden" style="margin-top:12px">Täytä päivämäärä, kellonaika ja paikka ensin.</div>
+  </div>
+</section>
+
+<section id="appContent">
+
+<section id="checklist" class="card">
+  <div class="head check"><h2>TARKASTUSLISTA – PELASTUSTOIMEN UAS-TOIMINTA</h2></div>
+  <div class="body">
+    <div class="sectiontitle">ENNEN LENNON ALOITTAMISTA:</div>
+    <label class="checkline"><input type="checkbox" id="chkRiskPlan"><span>Kirjallinen riskinarviointi ja lentosuunnitelma (lomakkeen täyttö)</span><span style="margin-left:auto"><a class="btn" href="#risk">Avaa lomake</a></span></label>
+    <label class="checkline"><input type="checkbox"><span>Nousu- ja laskupaikan perustaminen</span></label>
+    <label class="checkline"><input type="checkbox"><span>Lähtö- ja laskeutumisalusta sijoitettu dronen alle</span></label>
+    <div class="sectiontitle" style="margin-top:10px">Ilmoitukset</div>
+    <div class="inlinechecks">
+      <label><input type="checkbox"> Lennonjohto</label><label><input type="checkbox"> AMC</label><label><input type="checkbox"> Puolustusvoimat</label><label><input type="checkbox"> Rajavartiolaitos</label>
+    </div>
+
+    <div class="sectiontitle">OHJAIMEN TARKASTAMINEN:</div>
+    <label class="checkline"><input type="checkbox"><span>Näyttö liitetty ohjaimeen ja tarvittavat kytkennät tehty</span></label>
+    <label class="checkline"><input type="checkbox"><span>Käytettävän ohjelman avaaminen</span></label>
+    <label class="checkline"><input type="checkbox"><span>Käynnistä ohjain</span></label>
+    <label class="checkline"><input type="checkbox"><span>Ohjaimen ja näytön akun varaus riittävä</span></label>
+
+    <div class="sectiontitle">DRONEN TARKASTAMINEN:</div>
+    <label class="checkline"><input type="checkbox"><span>Dronen kunnon silmämääräinen tarkastaminen</span></label>
+    <label class="checkline"><input type="checkbox"><span>Propellien kunto, kiinnitys ja tarvittaessa avaus</span></label>
+    <label class="checkline"><input type="checkbox"><span>Kameran suojuksen/gimbaalin tuen poisto</span></label>
+    <label class="checkline"><input type="checkbox"><span>Dronen virran käynnistäminen, akkujen varauksen tarkistaminen (myös lisäakut)</span></label>
+    <label class="checkline"><input type="checkbox"><span>Muodosta ohjaimella yhteys droneen</span></label>
+    <label class="checkline"><input type="checkbox"><span>Dronen merkkivalojen toiminta</span></label>
+    <label class="checkline"><input type="checkbox"><span>Kameran asetusten valinta</span></label>
+    <label class="checkline"><input type="checkbox"><span>Muistikortti ja tallennustilan riittävyys</span></label>
+
+    <div class="sectiontitle">LENNON ALOITUS:</div>
+    <label class="checkline"><input type="checkbox"><span>Tarkista näytön virheilmoitukset (GPS-signaali, kompassin kalibrointi, ilmatilavaroitukset)</span></label>
+    <label class="checkline"><input type="checkbox"><span>Kalibroi kompassi tarvittaessa</span></label>
+    <label class="checkline"><input type="checkbox"><span>Aseta RTH-paikka ja RTH-korkeus (jos käytettävissä)</span></label>
+    <label class="checkline"><input type="checkbox"><span>Käynnistä roottorit</span></label>
+    <label class="checkline"><input type="checkbox"><span>Nosta drone muutaman metrin korkeuteen ja anna sen leijua paikallaan</span></label>
+    <label class="checkline"><input type="checkbox"><span>Kuuluuko epätavallisia ääniä?</span></label>
+    <label class="checkline"><input type="checkbox"><span>Varmista, että satelliittipaikannus toimii oikein</span></label>
+    <label class="checkline"><input type="checkbox"><span>Tarkasta toimiiko ohjaus normaalisti</span></label>
+    <div class="inlinechecks"><label><input type="radio" name="go"> GO</label><label><input type="radio" name="go"> NO GO</label></div>
+
+    <div class="sectiontitle">LENNON LOPETUS:</div>
+    <label class="checkline"><input type="checkbox"><span>Varmista laskeutumispaikan turvallisuus ja esteettömyys (ei sivullisia)</span></label>
+    <label class="checkline"><input type="checkbox"><span>Käännä kamera vaakatasoon ennen laskeutumista</span></label>
+    <label class="checkline"><input type="checkbox"><span>Laskeudu kohtisuoraan alaspäin merkatulle laskeutumispaikalle</span></label>
+
+    <div class="sectiontitle">LENNON TAI LENTOSARJAN JÄLKEEN:</div>
+    <div class="sectiontitle" style="margin-top:10px">Lopetusilmoitukset</div>
+    <div class="inlinechecks">
+      <label><input type="checkbox"> Lennonjohto</label><label><input type="checkbox"> AMC</label><label><input type="checkbox"> Puolustusvoimat</label><label><input type="checkbox"> Rajavartiolaitos</label>
+    </div>
+    <label class="checkline"><input type="checkbox"><span>Puhdista drone tarvittaessa.</span></label>
+    <label class="checkline"><input type="checkbox"><span>Tarkista propellit ja dronen yleinen kunto.</span></label>
+    <label class="checkline"><input type="checkbox"><span>Määritä huollon ja päivitysten tarve.</span></label>
+    <label class="checkline"><input type="checkbox"><span>Lataa akut lennon jälkeen ja huolehdi toimintakunnosta seuraavaa tehtävää varten.</span></label>
+    <label class="checkline"><input type="checkbox"><span>Kirjaa lennätystapahtuma omaan lennätyspäiväkirjaan OPS M1-35 kriteerien mukaisesti:</span></label>
+  </div>
+</section>
+
+<section id="risk" class="card">
+  <div class="head risk"><h2>Kirjallinen riskinarviointi</h2></div>
+  <div class="body">
+    <div class="grid3">
+      <div class="field"><label>Paikka</label><input id="place" readonly></div>
+      <div class="field"><label>Päivämäärä</label><input id="date" type="date" readonly></div>
+      <div class="field"><label>Kellonaika</label><input id="time" type="time" readonly></div>
+      <div class="field"><label>GPS-sijainti</label><input id="riskGps" readonly placeholder="Ei haettu"></div>
+      <div class="field"><label>Kauko-ohjaaja</label><input id="pilot"></div>
+      <div class="field"><label>Tähystäjä</label><input id="observer"></div>
+      <div class="field"><label>Pel.toim.joht.</label><input id="ptj"></div>
+    </div>
+
+    <div class="sectiontitle">Lentotehtävä</div>
+    <div class="grid2">
+      <div class="field"><label>Lentotehtävä</label><select id="mission"><option>Harjoittelu</option><option>Ihmisen etsintä</option><option>Tiedustelu henkilö</option><option>Tiedustelu rakennuspalo</option><option>Tiedustelu maastopalo</option><option>Tiedustelu liikenneonnettomuus</option><option>Viestintä</option><option>Öljyntorjunta</option><option>Kemiallinen vuoto</option><option>Seuranta</option><option>Joku muu</option></select></div>
+      <div class="field"><label>Joku muu, mikä</label><input id="missionOther"></div>
+      <div class="field"><label>Lentokorkeus (m)</label><input id="altitude" type="number"></div>
+      <div class="field"><label>Toiminta-alue</label><input id="area"></div>
+      <div class="field"><label>Käytettävä ilma-alus</label><select id="aircraft"><option selected>DJI Matrice 4TD</option><option>DJI Mini 3</option></select></div>
+      <div class="field"><label>Viestivälineet ja taajuudet</label><div class="grid2"><input id="virve" placeholder="Virve esim. KUVPK40"><input id="vhf" placeholder="VHF esim. kanava 3"></div></div>
+    </div>
+
+    <div class="sectiontitle">Lentoalueen ennakkotiedustelu</div>
+    <div class="inlinechecks"><label><input type="checkbox" id="aviamaps"> <a href="https://aviamaps.com/" target="_blank" rel="noopener">Aviamaps.com</a></label><label><input type="checkbox" id="ais"> <a href="https://ais.fi/" target="_blank" rel="noopener">AIS.fi (NOTAM)</a></label><label><input type="checkbox" id="weatherproof"> <a href="https://drone.weatherproof.fi/" target="_blank" rel="noopener">Drone.weatherproof.fi</a></label></div>
+    <div class="grid2">
+      <div class="field"><label>Näkö- ja lentoesteet</label><input id="obstacles"></div>
+      <div class="field"><label>Ihmisjoukko</label><input id="crowd"></div>
+      <div class="field"><label>Vesistöt</label><input id="waters"></div>
+      <div class="field"><label>Signaalihäiriöt</label><input id="signal"></div>
+    </div>
+
+    <div class="sectiontitle">Sää lennätyspaikalla</div>
+    <div class="grid2">
+      <div class="field"><label>Lämpötila (°C)</label><input id="temp" type="number"></div>
+      <div class="field"><label>Tuuli (m/s)</label><input id="wind" type="number"></div>
+      <div class="field"><label>Sade/sumu</label><select id="rain"><option>Ei</option><option>Kevyt</option><option>Voimakas</option></select></div>
+      <div class="field"><label>Valoisuus</label><select id="light"><option>Päivä</option><option>Hämärä</option><option>Pimeä</option></select></div>
+    </div>
+
+    <div class="sectiontitle">Keskeiset tunnistetut riskit ovat:</div>
+    <div class="notice">Ei riskiä = 0, Matala = 1, Keski = 3, Korkea = 5. Maksimiriski on 60.</div>
+    <div id="riskRows" class="riskcards">
+      <div class="riskcard">
+        <div class="riskname">1. Tehtävä</div>
+        <div class="riskrow">
+          <select id="riskTehtava" class="riskselect r0">
+            <option>EI RISKIÄ</option>
+            <option>MATALA</option>
+            <option>KESKI</option>
+            <option>KORKEA</option>
+          </select>
+          <div class="score">0</div>
+        </div>
+      </div>
+      <div class="riskcard">
+        <div class="riskname">2. Toiminta-alue</div>
+        <div class="riskrow">
+          <select id="riskToimintaAlue" class="riskselect r0">
+            <option>EI RISKIÄ</option>
+            <option>MATALA</option>
+            <option>KESKI</option>
+            <option>KORKEA</option>
+          </select>
+          <div class="score">0</div>
+        </div>
+      </div>
+      <div class="riskcard">
+        <div class="riskname">3. Fyysiset esteet</div>
+        <div class="riskrow">
+          <select id="riskFyysisetEsteet" class="riskselect r0">
+            <option>EI RISKIÄ</option>
+            <option>MATALA</option>
+            <option>KESKI</option>
+            <option>KORKEA</option>
+          </select>
+          <div class="score">0</div>
+        </div>
+      </div>
+      <div class="riskcard">
+        <div class="riskname">4. Ihmismäärä (väkijoukko)</div>
+        <div class="riskrow">
+          <select id="riskIhmismaara" class="riskselect r0">
+            <option>EI RISKIÄ</option>
+            <option>MATALA</option>
+            <option>KESKI</option>
+            <option>KORKEA</option>
+          </select>
+          <div class="score">0</div>
+        </div>
+      </div>
+      <div class="riskcard">
+        <div class="riskname">5. Signaalihäiriöt</div>
+        <div class="riskrow">
+          <select id="riskSignaalihairiot" class="riskselect r0">
+            <option>EI RISKIÄ</option>
+            <option>MATALA</option>
+            <option>KESKI</option>
+            <option>KORKEA</option>
+          </select>
+          <div class="score">0</div>
+        </div>
+      </div>
+      <div class="riskcard">
+        <div class="riskname">6. Ilmatila (valvottu/valvomaton/UAS)</div>
+        <div class="riskrow">
+          <select id="riskIlmatila" class="riskselect r0">
+            <option>EI RISKIÄ</option>
+            <option>MATALA</option>
+            <option>KESKI</option>
+            <option>KORKEA</option>
+          </select>
+          <div class="score">0</div>
+        </div>
+      </div>
+      <div class="riskcard">
+        <div class="riskname">7. Tuuli, puuskat ja turbulenssi</div>
+        <div class="riskrow">
+          <select id="riskTuuli" class="riskselect r0">
+            <option>EI RISKIÄ</option>
+            <option>MATALA</option>
+            <option>KESKI</option>
+            <option>KORKEA</option>
+          </select>
+          <div class="score">0</div>
+        </div>
+      </div>
+      <div class="riskcard">
+        <div class="riskname">8. Lämpötila</div>
+        <div class="riskrow">
+          <select id="riskLampotila" class="riskselect r0">
+            <option>EI RISKIÄ</option>
+            <option>MATALA</option>
+            <option>KESKI</option>
+            <option>KORKEA</option>
+          </select>
+          <div class="score">0</div>
+        </div>
+      </div>
+      <div class="riskcard">
+        <div class="riskname">9. Jäätäminen / Kosteus</div>
+        <div class="riskrow">
+          <select id="riskJaaminen" class="riskselect r0">
+            <option>EI RISKIÄ</option>
+            <option>MATALA</option>
+            <option>KESKI</option>
+            <option>KORKEA</option>
+          </select>
+          <div class="score">0</div>
+        </div>
+      </div>
+      <div class="riskcard">
+        <div class="riskname">10. Näkyvyys / Valoisuus</div>
+        <div class="riskrow">
+          <select id="riskNakyvyys" class="riskselect r0">
+            <option>EI RISKIÄ</option>
+            <option>MATALA</option>
+            <option>KESKI</option>
+            <option>KORKEA</option>
+          </select>
+          <div class="score">0</div>
+        </div>
+      </div>
+      <div class="riskcard">
+        <div class="riskname">11. Laitteiston soveltuvuus tehtävään</div>
+        <div class="riskrow">
+          <select id="riskLaitteisto" class="riskselect r0">
+            <option>EI RISKIÄ</option>
+            <option>MATALA</option>
+            <option>KESKI</option>
+            <option>KORKEA</option>
+          </select>
+          <div class="score">0</div>
+        </div>
+      </div>
+      <div class="riskcard">
+        <div class="riskname">12. Lentäjän soveltuvuus tehtävään</div>
+        <div class="riskrow">
+          <select id="riskLentaja" class="riskselect r0">
+            <option>EI RISKIÄ</option>
+            <option>MATALA</option>
+            <option>KESKI</option>
+            <option>KORKEA</option>
+          </select>
+          <div class="score">0</div>
+        </div>
+      </div>
+    </div>
+    <div id="riskKpi" class="kpi green"><div class="label">Kokonaisriski tehtävällä</div><div class="value" id="riskTotal">0</div></div>
+
+    <div class="sectiontitle">Kuvaus riskien vähentämisestä</div>
+    <textarea id="riskReduction"></textarea>
+    <div class="grid2">
+      <div class="field"><label>Maksimi lentokorkeus (m)</label><input id="maxAlt" type="number"></div>
+      <div class="field"><label>Minimi lentokorkeus (m)</label><input id="minAlt" type="number"></div>
+    </div>
+
+    <div class="sectiontitle">Toiminta häiriötilanteessa</div>
+    <textarea id="emergency"></textarea>
+    <div class="sectiontitle">Ilmoitukset</div>
+    <div class="inlinechecks"><label><input type="checkbox" id="riskIlmoitusLennonjohto"> Lennonjohto / ATC p.</label><label><input type="checkbox" id="riskIlmoitusAMC"> AMC p. 03-3869851</label><label><input type="checkbox" id="riskIlmoitusPV"> PV p.</label><label><input type="checkbox" id="riskIlmoitusMuu"> Muu</label></div>
+    <div class="sectiontitle">Riskiarvion mukainen päätös PTJ:ltä (go / no-go)</div>
+    <select id="ptjDecision"><option>GO</option><option>NO-GO</option></select>
+    <div class="sectiontitle">Muuta / muistiinpanoja</div>
+    <textarea id="riskNotes"></textarea>
+  </div>
+</section>
+
+<section id="plan" class="card">
+  <div class="head plan"><h2>Kirjallinen lentosuunnitelma</h2></div>
+  <div class="body">
+    <div class="notice">Samat perustiedot tulevat riskinarvioinnista/automaattisesta aloituksesta. GPS näkyy mukana, jos se on haettu tehtäväpaikalla.</div>
+    <div class="summary" id="planAutofill"></div>
+
+    <div class="sectiontitle">Lentosuunnitelma (valitse ainakin perusoperaatiomalli)</div>
+    <div class="field"><label>Valitse</label><select id="operationModel"><option>Ensitiedustelu</option><option>Kohdetiedustelu</option><option>Seuranta</option></select></div>
+    <div class="field"><label>Vapaa teksti</label><textarea id="planFreeText"></textarea></div>
+
+    <div class="sectiontitle">Lentokorkeudet</div>
+    <div class="summary"><div><strong>Maksimi lentokorkeus:</strong> <span id="planMaxAlt">-</span></div><div><strong>Minimi lentokorkeus:</strong> <span id="planMinAlt">-</span></div></div>
+
+    <div class="sectiontitle">Lennätyspaikka ja varalaskupaikat</div>
+    <div class="notice">GPS haetaan vasta tehtäväpaikalla. Kun painat “Hae GPS-sijainti”, sama sijainti täyttyy lähtö- ja laskupaikan lisätiedoksi sekä lentopäiväkirjaan.</div>
+    <div style="margin-bottom:10px">
+      <button type="button" id="gpsBtn">Hae GPS-sijainti</button>
+      <span id="gpsStatus" class="subtle" style="margin-left:8px"></span>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Lähtöpaikka</label><input id="startPlace2"></div>
+      <div class="field"><label>Laskupaikka</label><input id="landingPlace"></div>
+      <div class="field"><label>Lähtöpaikan GPS</label><input id="planStartGps" readonly placeholder="Ei haettu"></div>
+      <div class="field"><label>Laskupaikan GPS</label><input id="planLandingGps" readonly placeholder="Ei haettu"></div>
+      <div class="field"><label>VARA1</label><input></div>
+      <div class="field"><label>HÄTÄ1</label><input></div>
+      <div class="field"><label>VARA2</label><input></div>
+      <div class="field"><label>HÄTÄ2</label><input></div>
+    </div>
+
+    <div class="sectiontitle">Kellonajat</div>
+    <div class="grid2"><div class="field"><label>TOIMINNAN ALKAMINEN</label><input type="time" id="operationStart"></div><div class="field"><label>TOIMINNAN PÄÄTTYMINEN</label><input type="time" id="operationEnd"></div></div>
+    <table class="timeTable"><thead><tr><th></th><th>YLÖS</th><th>ALAS</th></tr></thead><tbody>
+      <tr><td>1.</td><td><input type="time" class="upTime"></td><td><input type="time" class="downTime"></td></tr>
+      <tr><td>2.</td><td><input type="time" class="upTime"></td><td><input type="time" class="downTime"></td></tr>
+      <tr><td>3.</td><td><input type="time" class="upTime"></td><td><input type="time" class="downTime"></td></tr>
+      <tr><td>4.</td><td><input type="time" class="upTime"></td><td><input type="time" class="downTime"></td></tr>
+    </tbody></table>
+    <div class="field"><label>LENTOMINUUTIT YHTEENSÄ</label><input id="flightMinutes" readonly placeholder="Lasketaan ajoista"></div>
+
+    <div class="sectiontitle">MUUTA / MUISTIINPANOJA</div>
+    <textarea id="planNotes"></textarea>
+
+    <div style="margin-top:14px"><button type="button" id="doneBtn">Merkitse valmis ja palaa tarkistuslistaan</button></div>
+    <div id="savedInfo" class="saved">Tallennettu testinä selaimeen.</div>
+  </div>
+</section>
+
+<section id="log" class="card">
+  <div class="head log"><h2>Lentopäiväkirjatiedot / Pronto</h2></div>
+  <div class="body">
+    <div class="grid2">
+      <div class="field"><label>Lennon päivämäärä</label><input type="date" id="logDate"></div>
+      <div class="field"><label>Lennon lähtö- ja laskupaikka</label><input id="logPlace"></div>
+      <div class="field"><label>Lennon lähtö- ja laskupaikan GPS</label><input id="logGps" readonly placeholder="Ei haettu"></div>
+      <div class="field"><label>Ilma-aluksen päällikkö</label><input id="logCaptain"></div>
+      <div class="field"><label>Ilma-aluksen tai ilma-alusjärjestelmän valmistaja ja malli</label><input id="logAircraft"></div>
+      <div class="field"><label>Alkamisaika</label><input type="time"></div>
+      <div class="field"><label>Päättymisaika</label><input type="time"></div>
+    </div>
+    <div class="inlinechecks"><label><input type="checkbox" id="logVLOS"> VLOS – näköyhteydessä lennättäminen</label><label><input type="checkbox" id="logEVLOS"> EVLOS – laajennettu näköyhteys tähystäjän avulla</label><label><input type="checkbox" id="logBVLOS"> BVLOS – näköyhteyden ulkopuolella lennättäminen</label></div>
+    <div class="grid2"><div class="field"><label>Maksimilentokorkeus</label><input type="number"></div><div class="field"><label>Lennetty lähempänä kuin 50 metrin etäisyydellä ihmisjoukosta</label><input></div><div class="field"><label>Lentotehtävän luonne</label><input id="logMissionNature" readonly></div></div>
+    <div class="field"><label>Muut lennolla sattuneet erityiset tapahtumat</label><textarea></textarea></div>
+  </div>
+</section>
+
+</section>
+</div>
+
+<script>
+(function(){
+const riskNames=["1. Tehtävä","2. Toiminta-alue","3. Fyysiset esteet","4. Ihmismäärä (väkijoukko)","5. Signaalihäiriöt","6. Ilmatila (valvottu/valvomaton/UAS)","7. Tuuli, puuskat ja turbulenssi","8. Lämpötila","9. Jäätäminen / Kosteus","10. Näkyvyys / Valoisuus","11. Laitteiston soveltuvuus tehtävään","12. Lentäjän soveltuvuus tehtävään"];
+const riskMap={"EI RISKIÄ":0,"MATALA":1,"KESKI":3,"KORKEA":5};
+function $(id){return document.getElementById(id);}
+function val(id){return $(id)?$(id).value:"";}
+function isChecked(id){return $(id) ? $(id).checked : false;}
+function safe(s){return (s||"").trim().replace(/[\\\\/:*?"<>|]/g,"").replace(/\\s+/g,"_")||"Paikka";}
+function gpsText(){return val("planStartGps") || "Ei haettu";}
+function aircraftKey(){return safe(val("aircraft")||val("startAircraft")).replace("DJI_","");}
+function taskName(){return `${val("date")||val("startDate")}_${(val("time")||val("startTime")||"00:00").replace(":","")}_${safe(val("place")||val("startPlace"))}_${aircraftKey()}`;}
+function updateName(){ $("filename").textContent = "Tehtävä: " + taskName(); }
+
+function calcRisk(){
+ let total=0;
+ document.querySelectorAll("#riskRows .riskcard").forEach(card=>{
+  const sel=card.querySelector("select");
+  if(!sel) return;
+  const score=riskMap[sel.value]||0;
+  sel.classList.remove("r0","r1","r3","r5");
+  sel.classList.add("r"+score);
+  const scoreEl=card.querySelector(".score");
+  if(scoreEl) scoreEl.textContent=score;
+  total+=score;
+ });
+ const totalEl=$("riskTotal");
+ if(totalEl) totalEl.textContent=total;
+ const k=$("riskKpi");
+ if(k) k.className="kpi "+(total<20?"green":(total>40?"red":"yellow"));
+ autosave();
+}
+function toMin(t){if(!t)return null; const p=t.split(":").map(Number); if(p.length<2||isNaN(p[0])||isNaN(p[1]))return null; return p[0]*60+p[1];}
+function calcMinutes(){
+ let total=0; const ups=[...document.querySelectorAll(".upTime")], downs=[...document.querySelectorAll(".downTime")];
+ ups.forEach((u,i)=>{const a=toMin(u.value), b=toMin(downs[i].value); if(a!==null&&b!==null&&b>=a) total+=b-a;});
+ $("flightMinutes").value=total?String(total):"";
+}
+function sync(){
+ updateName();
+ if($("riskGps")) $("riskGps").value=gpsText();
+ $("planAutofill").innerHTML=`<div><strong>Paikka:</strong> ${val("place")||"-"}</div><div><strong>Päivämäärä:</strong> ${val("date")||"-"}</div><div><strong>Kellonaika:</strong> ${val("time")||"-"}</div><div><strong>GPS:</strong> ${gpsText()}</div><div><strong>Kauko-ohjaaja:</strong> ${val("pilot")||"-"}</div><div><strong>Tähystäjä:</strong> ${val("observer")||"-"}</div><div><strong>Pel.toim.joht.:</strong> ${val("ptj")||"-"}</div><div><strong>Lentotehtävä:</strong> ${val("mission")} ${val("missionOther")?"/ "+val("missionOther"):""}</div><div><strong>Lentokorkeus:</strong> ${val("altitude")||"-"} m</div><div><strong>Toiminta-alue:</strong> ${val("area")||"-"}</div><div><strong>Ilma-alus:</strong> ${val("aircraft")||"-"}</div><div><strong>Viestivälineet:</strong> Virve ${val("virve")||"-"} / VHF ${val("vhf")||"-"}</div>`;
+ $("planMaxAlt").textContent=val("maxAlt")||"-";
+ $("planMinAlt").textContent=val("minAlt")||"-";
+ if($("planStartGps") && $("planLandingGps") && val("planStartGps") && !val("planLandingGps")) $("planLandingGps").value = val("planStartGps");
+ $("logDate").value=val("date"); $("logPlace").value=val("place"); $("logCaptain").value=val("pilot"); $("logAircraft").value=val("aircraft"); $("logGps").value=gpsText(); $("logMissionNature").value=val("mission")+(val("missionOther")?"/ "+val("missionOther"):"");
+}
+function collect(){
+ return {name:taskName(), savedAt:new Date().toISOString(), fields:[...document.querySelectorAll("input,select,textarea")].map(e=>({id:e.id,type:e.type,value:(e.type==="checkbox"||e.type==="radio")?e.checked:e.value}))};
+}
+function autosave(){try{localStorage.setItem("vpk_uas_"+taskName(),JSON.stringify(collect()));}catch(e){}}
+function saveFlash(){autosave(); const s=$("savedInfo"); s.style.display="block"; setTimeout(()=>s.style.display="none",2000);}
+function startTask(){
+ if(!val("startDate")||!val("startTime")||!val("startPlace")){$("startError").classList.remove("hidden"); return;}
+ $("startError").classList.add("hidden");
+ $("date").value=val("startDate"); $("time").value=val("startTime"); $("place").value=val("startPlace"); if($("startAircraft") && $("aircraft")) $("aircraft").value=val("startAircraft");
+ sync(); autosave(); saveToBackend("StartTask"); location.hash="#checklist";
+}
+function done(){
+ $("chkRiskPlan").checked=true;
+ saveFlash();
+ saveToBackend("ManualSave");
+ setTimeout(()=>{ location.hash="#checklist"; },50);
+}
+function getGps(){
+ const status=$("gpsStatus");
+ if(status) status.textContent="Haetaan GPS-sijaintia...";
+ if(!navigator.geolocation){ if(status) status.textContent="Tämä selain ei tue GPS-paikannusta."; return; }
+ navigator.geolocation.getCurrentPosition(pos=>{
+   const gps = pos.coords.latitude.toFixed(6) + ", " + pos.coords.longitude.toFixed(6);
+   if($("planStartGps")) $("planStartGps").value = gps;
+   if($("planLandingGps")) $("planLandingGps").value = gps;
+   if(status) status.textContent="GPS-sijainti haettu.";
+   sync(); autosave();
+ }, err=>{
+   if(status) status.textContent="GPS-sijaintia ei saatu. Voit jatkaa ilman sitä.";
+ }, {enableHighAccuracy:true, timeout:10000, maximumAge:0});
+}
+
+const API_URL = "https://script.google.com/macros/s/AKfycbyvk92_EjPOskYpLzcj7DsPqsZIbcWFKmDHPJ4NYpwUiR8Fa8Sb4Md3Z_Ko1raHN4REZA/exec";
+let backendSaveTimer = null;
+let lastBackendSave = 0;
+
+function setSaveStatus(text, cls){
+ const el=$("saveStatus");
+ if(!el) return;
+ el.textContent=text;
+ el.className="savestatus " + (cls||"wait");
+}
+
+function getChecklistData(){
+ const boxes=[...document.querySelectorAll("#checklist input[type='checkbox']")];
+ const radio=[...document.querySelectorAll("#checklist input[name='go']")];
+ const get=i=>boxes[i] ? boxes[i].checked : false;
+ let paatos="";
+ if(radio[0] && radio[0].checked) paatos="GO";
+ if(radio[1] && radio[1].checked) paatos="NO GO";
+ return {
+  RiskinarviointiJaLentosuunnitelma:get(0),
+  NousuJaLaskupaikkaPerustettu:get(1),
+  LaskeutumisalustaSijoitettu:get(2),
+  IlmoitusLennonjohto:get(3),
+  IlmoitusAMC:get(4),
+  IlmoitusPuolustusvoimat:get(5),
+  IlmoitusRajavartiolaitos:get(6),
+  NayttoLiitettyOhjaimeen:get(7),
+  KaytettavaOhjelmaAvattu:get(8),
+  OhjainKaynnistetty:get(9),
+  OhjaimenJaNaytonAkkuRiittava:get(10),
+  DroneSilmamaaraisestiTarkastettu:get(11),
+  PropellitTarkastettu:get(12),
+  GimbaalinTukiPoistettu:get(13),
+  DroneKaynnistettyAkutTarkistettu:get(14),
+  YhteysDroneenMuodostettu:get(15),
+  MerkkivalotToimivat:get(16),
+  KameranAsetuksetValittu:get(17),
+  MuistikorttiJaTallennustilaOK:get(18),
+  NaytonVirheilmoituksetTarkistettu:get(19),
+  KompassiKalibroituTarvittaessa:get(20),
+  RTHPaikkaJaKorkeusAsetettu:get(21),
+  RoottoritKaynnistetty:get(22),
+  LeijutustestiTehty:get(23),
+  EpatavallisetAanetTarkistettu:get(24),
+  SatelliittipaikannusOK:get(25),
+  OhjausToimiiNormaalisti:get(26),
+  LennonAloitusPaatos:paatos,
+  LaskeutumispaikkaTurvallinen:get(27),
+  KameraVaakatasoonEnnenLaskua:get(28),
+  LaskeuduttuMerkatullePaikalle:get(29),
+  LopetusilmoitusLennonjohto:get(30),
+  LopetusilmoitusAMC:get(31),
+  LopetusilmoitusPuolustusvoimat:get(32),
+  LopetusilmoitusRajavartiolaitos:get(33),
+  DronePuhdistettu:get(34),
+  PropellitJaKuntoTarkistettu:get(35),
+  HuoltoJaPaivitystarveMaaritetty:get(36),
+  AkutLadattu:get(37),
+  LennatystapahtumaKirjattu:get(38)
+ };
+}
+
+function getRiskSelection(index){
+ const ids=["riskTehtava","riskToimintaAlue","riskFyysisetEsteet","riskIhmismaara","riskSignaalihairiot","riskIlmatila","riskTuuli","riskLampotila","riskJaaminen","riskNakyvyys","riskLaitteisto","riskLentaja"];
+ const el=$(ids[index]);
+ return el ? el.value : "";
+}
+function getRiskScore(index){
+ const ids=["riskTehtava","riskToimintaAlue","riskFyysisetEsteet","riskIhmismaara","riskSignaalihairiot","riskIlmatila","riskTuuli","riskLampotila","riskJaaminen","riskNakyvyys","riskLaitteisto","riskLentaja"];
+ const el=$(ids[index]);
+ return el ? String(riskMap[el.value]||0) : "";
+}
+
+function buildSections(){
+ const tehtavaNimi = taskName();
+ const common = {
+  TehtavaNimi: tehtavaNimi,
+  Paikka: val("place"),
+  Paivamaara: val("date"),
+  Kellonaika: val("time"),
+  GPS: gpsText(),
+  KaukoOhjaaja: val("pilot"),
+  Tahystaja: val("observer"),
+  PelToimJohtaja: val("ptj"),
+  Lentotehtava: val("mission"),
+  LentotehtavaMuu: val("missionOther"),
+  KaytettavaIlmaAlus: val("aircraft"),
+  Virve: val("virve"),
+  VHF: val("vhf")
+ };
+
+ const tehtavat = {
+  TehtavaNimi: tehtavaNimi,
+  Paivamaara: val("date"),
+  Kellonaika: val("time"),
+  Paikka: val("place"),
+  GPS: gpsText(),
+  KaukoOhjaaja: val("pilot"),
+  Tahystaja: val("observer"),
+  PelToimJohtaja: val("ptj"),
+  Lentotehtava: val("mission"),
+  LentotehtavaMuu: val("missionOther"),
+  KaytettavaIlmaAlus: val("aircraft"),
+  Virve: val("virve"),
+  VHF: val("vhf"),
+  Tila: "Kesken"
+ };
+
+ const tarkistuslista = Object.assign({TehtavaNimi:tehtavaNimi}, getChecklistData());
+
+ const riskinarviointi = Object.assign({}, common, {
+  Lentokorkeus: val("altitude"),
+  ToimintaAlue: val("area"),
+  AviamapsTarkistettu: $("aviamaps") ? $("aviamaps").checked : false,
+  AisNotamTarkistettu: $("ais") ? $("ais").checked : false,
+  DroneWeatherproofTarkistettu: $("weatherproof") ? $("weatherproof").checked : false,
+  NakoJaLentoesteet: val("obstacles"),
+  Ihmisjoukko: val("crowd"),
+  Vesistot: val("waters"),
+  Signaalihairiot: val("signal"),
+  Lampotila: val("temp"),
+  Tuuli: val("wind"),
+  SadeSumu: val("rain"),
+  Valoisuus: val("light"),
+  RiskiTehtava: getRiskSelection(0),
+  RiskiTehtavaPisteet: getRiskScore(0),
+  RiskiToimintaAlue: getRiskSelection(1),
+  RiskiToimintaAluePisteet: getRiskScore(1),
+  RiskiFyysisetEsteet: getRiskSelection(2),
+  RiskiFyysisetEsteetPisteet: getRiskScore(2),
+  RiskiIhmismaara: getRiskSelection(3),
+  RiskiIhmismaaraPisteet: getRiskScore(3),
+  RiskiSignaalihairiot: getRiskSelection(4),
+  RiskiSignaalihairiotPisteet: getRiskScore(4),
+  RiskiIlmatila: getRiskSelection(5),
+  RiskiIlmatilaPisteet: getRiskScore(5),
+  RiskiTuuliPuuskatTurbulenssi: getRiskSelection(6),
+  RiskiTuuliPuuskatTurbulenssiPisteet: getRiskScore(6),
+  RiskiLampotila: getRiskSelection(7),
+  RiskiLampotilaPisteet: getRiskScore(7),
+  RiskiJaaminenKosteus: getRiskSelection(8),
+  RiskiJaaminenKosteusPisteet: getRiskScore(8),
+  RiskiNakyvyysValoisuus: getRiskSelection(9),
+  RiskiNakyvyysValoisuusPisteet: getRiskScore(9),
+  RiskiLaitteistonSoveltuvuus: getRiskSelection(10),
+  RiskiLaitteistonSoveltuvuusPisteet: getRiskScore(10),
+  RiskiLentajanSoveltuvuus: getRiskSelection(11),
+  RiskiLentajanSoveltuvuusPisteet: getRiskScore(11),
+  Kokonaisriski: $("riskTotal") ? $("riskTotal").textContent : "",
+  RiskienVahentaminen: val("riskReduction"),
+  MaksimiLentokorkeus: val("maxAlt"),
+  MinimiLentokorkeus: val("minAlt"),
+  ToimintaHairiotilanteessa: val("emergency"),
+  IlmoitusLennonjohto: isChecked("riskIlmoitusLennonjohto"),
+  IlmoitusAMC: isChecked("riskIlmoitusAMC"),
+  IlmoitusPV: isChecked("riskIlmoitusPV"),
+  IlmoitusMuu: isChecked("riskIlmoitusMuu"),
+  PTJPaatos: val("ptjDecision"),
+  Muistiinpanot: val("riskNotes")
+ });
+
+ const lentosuunnitelma = Object.assign({}, common, {
+  ToimintaAlue: val("area"),
+  Operaatiomalli: val("operationModel"),
+  LentosuunnitelmaVapaaTeksti: val("planFreeText"),
+  MaksimiLentokorkeus: val("maxAlt"),
+  MinimiLentokorkeus: val("minAlt"),
+  Lahtopaikka: val("startPlace2"),
+  Laskupaikka: val("landingPlace"),
+  LahtoLaskuGPS: gpsText(),
+  Vara1: "",
+  Hata1: "",
+  Vara2: "",
+  Hata2: "",
+  ToiminnanAlkaminen: val("operationStart"),
+  Nousu1: document.querySelectorAll(".upTime")[0]?.value || "",
+  Lasku1: document.querySelectorAll(".downTime")[0]?.value || "",
+  Nousu2: document.querySelectorAll(".upTime")[1]?.value || "",
+  Lasku2: document.querySelectorAll(".downTime")[1]?.value || "",
+  Nousu3: document.querySelectorAll(".upTime")[2]?.value || "",
+  Lasku3: document.querySelectorAll(".downTime")[2]?.value || "",
+  Nousu4: document.querySelectorAll(".upTime")[3]?.value || "",
+  Lasku4: document.querySelectorAll(".downTime")[3]?.value || "",
+  ToiminnanPaattyminen: val("operationEnd"),
+  LentominuutitYhteensa: val("flightMinutes"),
+  Muistiinpanot: val("planNotes")
+ });
+
+ const lentopaivakirja = {
+  TehtavaNimi: tehtavaNimi,
+  LennonPaivamaara: val("logDate"),
+  LennonLahtoJaLaskupaikka: val("logPlace"),
+  GPS: gpsText(),
+  IlmaAluksenPaallikko: val("logCaptain"),
+  IlmaAluksenValmistajaJaMalli: val("logAircraft"),
+  AlkamisAika: "",
+  PaattymisAika: "",
+  VLOS: isChecked("logVLOS"),
+  EVLOS: isChecked("logEVLOS"),
+  BVLOS: isChecked("logBVLOS"),
+  Maksimilentokorkeus: "",
+  LahempanaKuin50mIhmisjoukosta: "",
+  LentotehtavanLuonne: val("logMissionNature"),
+  ErityisetTapahtumat: ""
+ };
+
+ return {
+  Tehtavat: tehtavat,
+  Tarkistuslista: tarkistuslista,
+  Riskinarviointi: riskinarviointi,
+  Lentosuunnitelma: lentosuunnitelma,
+  Lentopaivakirja: lentopaivakirja
+ };
+}
+
+async function saveToBackend(toiminto){
+ if(!val("date") || !val("time") || !val("place")){
+  setSaveStatus("Ei tallennettu: aloita tehtävä ensin", "err");
+  return false;
+ }
+ const payload={
+  action:"saveAll",
+  tehtavaNimi:taskName(),
+  toiminto:toiminto||"Autosave",
+  sections:buildSections(),
+  deviceInfo:navigator.platform || "",
+  browserInfo:navigator.userAgent || ""
+ };
+ try{
+  setSaveStatus("Tallennetaan Google Sheetiin...", "wait");
+  const res = await fetch(API_URL, {
+    method:"POST",
+    headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body:JSON.stringify(payload)
+  });
+  const text = await res.text();
+  let json = {};
+  try{ json = JSON.parse(text); }catch(e){ json={ok:res.ok, raw:text}; }
+  if(json.ok){
+    lastBackendSave = Date.now();
+    setSaveStatus("Tallennettu Google Sheetiin " + new Date().toLocaleTimeString("fi-FI"), "ok");
+    return true;
+  }
+  throw new Error(json.error || "Tallennus epäonnistui");
+ }catch(err){
+  try{
+    await fetch(API_URL, {
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload)
+    });
+    setSaveStatus("Tallennus lähetetty (vastausta ei voitu varmistaa). Tarkista Sheet tarvittaessa.", "wait");
+    return true;
+  }catch(err2){
+    setSaveStatus("Tallennusvirhe: tiedot tallessa laitteella. Yritä uudelleen.", "err");
+    return false;
+  }
+ }
+}
+
+function queueBackendSave(){
+ clearTimeout(backendSaveTimer);
+ backendSaveTimer = setTimeout(()=>saveToBackend("Autosave"), 1500);
+}
+
+document.addEventListener("DOMContentLoaded",function(){
+ const today=new Date().toISOString().slice(0,10); $("startDate").value=today;
+  calcRisk(); updateName();
+ $("startBtn").addEventListener("click",startTask);
+ $("gpsBtn").addEventListener("click",getGps);
+ $("doneBtn").addEventListener("click",done);
+ const manualSaveBtn=$("manualSaveBtn"); if(manualSaveBtn) manualSaveBtn.addEventListener("click",()=>saveToBackend("ManualSave"));
+ document.querySelectorAll("input,select,textarea").forEach(e=>{
+  e.addEventListener("input",()=>{sync();calcMinutes();autosave();queueBackendSave();});
+  e.addEventListener("change",()=>{sync();calcMinutes();autosave();queueBackendSave();});
+ });
+});
+})();
+</script>
+</body>
+</html>
