@@ -792,8 +792,8 @@ document.addEventListener("DOMContentLoaded",function(){
  $("startBtn").addEventListener("click",startTask);
  $("gpsBtn").addEventListener("click",getGps);
  document.querySelectorAll("#riskRows select").forEach(s=>{
-  s.addEventListener("change",()=>{calcRisk();sync();queueSave();});
-  s.addEventListener("input",()=>{calcRisk();sync();queueSave();});
+  s.addEventListener("change",()=>{calcRisk();sync();queueBackendSave();});
+  s.addEventListener("input",()=>{calcRisk();sync();queueBackendSave();});
  });
  $("doneBtn").addEventListener("click",done);
  const manualSaveBtn=$("manualSaveBtn"); if(manualSaveBtn) manualSaveBtn.addEventListener("click",()=>saveToBackend("ManualSave"));
