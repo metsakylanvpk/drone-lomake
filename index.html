@@ -65,7 +65,7 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 <body>
 
 <div class="top">
-  <div class="title">VPK UAS – drone-lomake beta</div>
+  <div class="title">VPK UAS – mobile stable beta</div>
   <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
   <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
   <div class="nav">
@@ -203,10 +203,10 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
         <div class="riskname">1. Tehtävä</div>
         <div class="riskrow">
           <select id="riskTehtava" class="riskselect r0">
-            <option>EI RISKIÄ</option>
-            <option>MATALA</option>
-            <option>KESKI</option>
-            <option>KORKEA</option>
+            <option value="EI RISKIÄ">EI RISKIÄ</option>
+            <option value="MATALA">MATALA</option>
+            <option value="KESKI">KESKI</option>
+            <option value="KORKEA">KORKEA</option>
           </select>
           <div class="score">0</div>
         </div>
@@ -215,10 +215,10 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
         <div class="riskname">2. Toiminta-alue</div>
         <div class="riskrow">
           <select id="riskToimintaAlue" class="riskselect r0">
-            <option>EI RISKIÄ</option>
-            <option>MATALA</option>
-            <option>KESKI</option>
-            <option>KORKEA</option>
+            <option value="EI RISKIÄ">EI RISKIÄ</option>
+            <option value="MATALA">MATALA</option>
+            <option value="KESKI">KESKI</option>
+            <option value="KORKEA">KORKEA</option>
           </select>
           <div class="score">0</div>
         </div>
@@ -227,10 +227,10 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
         <div class="riskname">3. Fyysiset esteet</div>
         <div class="riskrow">
           <select id="riskFyysisetEsteet" class="riskselect r0">
-            <option>EI RISKIÄ</option>
-            <option>MATALA</option>
-            <option>KESKI</option>
-            <option>KORKEA</option>
+            <option value="EI RISKIÄ">EI RISKIÄ</option>
+            <option value="MATALA">MATALA</option>
+            <option value="KESKI">KESKI</option>
+            <option value="KORKEA">KORKEA</option>
           </select>
           <div class="score">0</div>
         </div>
@@ -239,10 +239,10 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
         <div class="riskname">4. Ihmismäärä (väkijoukko)</div>
         <div class="riskrow">
           <select id="riskIhmismaara" class="riskselect r0">
-            <option>EI RISKIÄ</option>
-            <option>MATALA</option>
-            <option>KESKI</option>
-            <option>KORKEA</option>
+            <option value="EI RISKIÄ">EI RISKIÄ</option>
+            <option value="MATALA">MATALA</option>
+            <option value="KESKI">KESKI</option>
+            <option value="KORKEA">KORKEA</option>
           </select>
           <div class="score">0</div>
         </div>
@@ -251,10 +251,10 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
         <div class="riskname">5. Signaalihäiriöt</div>
         <div class="riskrow">
           <select id="riskSignaalihairiot" class="riskselect r0">
-            <option>EI RISKIÄ</option>
-            <option>MATALA</option>
-            <option>KESKI</option>
-            <option>KORKEA</option>
+            <option value="EI RISKIÄ">EI RISKIÄ</option>
+            <option value="MATALA">MATALA</option>
+            <option value="KESKI">KESKI</option>
+            <option value="KORKEA">KORKEA</option>
           </select>
           <div class="score">0</div>
         </div>
@@ -263,10 +263,10 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
         <div class="riskname">6. Ilmatila (valvottu/valvomaton/UAS)</div>
         <div class="riskrow">
           <select id="riskIlmatila" class="riskselect r0">
-            <option>EI RISKIÄ</option>
-            <option>MATALA</option>
-            <option>KESKI</option>
-            <option>KORKEA</option>
+            <option value="EI RISKIÄ">EI RISKIÄ</option>
+            <option value="MATALA">MATALA</option>
+            <option value="KESKI">KESKI</option>
+            <option value="KORKEA">KORKEA</option>
           </select>
           <div class="score">0</div>
         </div>
@@ -275,10 +275,10 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
         <div class="riskname">7. Tuuli, puuskat ja turbulenssi</div>
         <div class="riskrow">
           <select id="riskTuuli" class="riskselect r0">
-            <option>EI RISKIÄ</option>
-            <option>MATALA</option>
-            <option>KESKI</option>
-            <option>KORKEA</option>
+            <option value="EI RISKIÄ">EI RISKIÄ</option>
+            <option value="MATALA">MATALA</option>
+            <option value="KESKI">KESKI</option>
+            <option value="KORKEA">KORKEA</option>
           </select>
           <div class="score">0</div>
         </div>
@@ -287,10 +287,10 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
         <div class="riskname">8. Lämpötila</div>
         <div class="riskrow">
           <select id="riskLampotila" class="riskselect r0">
-            <option>EI RISKIÄ</option>
-            <option>MATALA</option>
-            <option>KESKI</option>
-            <option>KORKEA</option>
+            <option value="EI RISKIÄ">EI RISKIÄ</option>
+            <option value="MATALA">MATALA</option>
+            <option value="KESKI">KESKI</option>
+            <option value="KORKEA">KORKEA</option>
           </select>
           <div class="score">0</div>
         </div>
@@ -299,10 +299,10 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
         <div class="riskname">9. Jäätäminen / Kosteus</div>
         <div class="riskrow">
           <select id="riskJaaminen" class="riskselect r0">
-            <option>EI RISKIÄ</option>
-            <option>MATALA</option>
-            <option>KESKI</option>
-            <option>KORKEA</option>
+            <option value="EI RISKIÄ">EI RISKIÄ</option>
+            <option value="MATALA">MATALA</option>
+            <option value="KESKI">KESKI</option>
+            <option value="KORKEA">KORKEA</option>
           </select>
           <div class="score">0</div>
         </div>
@@ -311,10 +311,10 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
         <div class="riskname">10. Näkyvyys / Valoisuus</div>
         <div class="riskrow">
           <select id="riskNakyvyys" class="riskselect r0">
-            <option>EI RISKIÄ</option>
-            <option>MATALA</option>
-            <option>KESKI</option>
-            <option>KORKEA</option>
+            <option value="EI RISKIÄ">EI RISKIÄ</option>
+            <option value="MATALA">MATALA</option>
+            <option value="KESKI">KESKI</option>
+            <option value="KORKEA">KORKEA</option>
           </select>
           <div class="score">0</div>
         </div>
@@ -323,10 +323,10 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
         <div class="riskname">11. Laitteiston soveltuvuus tehtävään</div>
         <div class="riskrow">
           <select id="riskLaitteisto" class="riskselect r0">
-            <option>EI RISKIÄ</option>
-            <option>MATALA</option>
-            <option>KESKI</option>
-            <option>KORKEA</option>
+            <option value="EI RISKIÄ">EI RISKIÄ</option>
+            <option value="MATALA">MATALA</option>
+            <option value="KESKI">KESKI</option>
+            <option value="KORKEA">KORKEA</option>
           </select>
           <div class="score">0</div>
         </div>
@@ -335,10 +335,10 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
         <div class="riskname">12. Lentäjän soveltuvuus tehtävään</div>
         <div class="riskrow">
           <select id="riskLentaja" class="riskselect r0">
-            <option>EI RISKIÄ</option>
-            <option>MATALA</option>
-            <option>KESKI</option>
-            <option>KORKEA</option>
+            <option value="EI RISKIÄ">EI RISKIÄ</option>
+            <option value="MATALA">MATALA</option>
+            <option value="KESKI">KESKI</option>
+            <option value="KORKEA">KORKEA</option>
           </select>
           <div class="score">0</div>
         </div>
@@ -448,21 +448,30 @@ function updateName(){ $("filename").textContent = "Tehtävä: " + taskName(); }
 
 function calcRisk(){
  let total=0;
- document.querySelectorAll("#riskRows .riskcard").forEach(card=>{
-  const sel=card.querySelector("select");
-  if(!sel) return;
-  const score=riskMap[sel.value]||0;
+ const cards = document.querySelectorAll("#riskRows .riskcard");
+ cards.forEach(card=>{
+  const sel = card.querySelector("select");
+  const scoreEl = card.querySelector(".score");
+  if(!sel || !scoreEl) return;
+  const raw = (sel.value || "").trim().toUpperCase();
+  let score = 0;
+  if(raw === "MATALA") score = 1;
+  else if(raw === "KESKI") score = 3;
+  else if(raw === "KORKEA") score = 5;
+  else score = 0;
   sel.classList.remove("r0","r1","r3","r5");
   sel.classList.add("r"+score);
-  const scoreEl=card.querySelector(".score");
-  if(scoreEl) scoreEl.textContent=score;
-  total+=score;
+  scoreEl.textContent = String(score);
+  total += score;
  });
- const totalEl=$("riskTotal");
- if(totalEl) totalEl.textContent=total;
- const k=$("riskKpi");
- if(k) k.className="kpi "+(total<20?"green":(total>40?"red":"yellow"));
- autosave();
+ const totalEl = $("riskTotal");
+ if(totalEl) totalEl.textContent = String(total);
+ const k = $("riskKpi");
+ if(k){
+  k.classList.remove("green","yellow","red");
+  k.classList.add(total < 20 ? "green" : (total > 40 ? "red" : "yellow"));
+ }
+ try { autosave(); } catch(e) {}
 }
 function toMin(t){if(!t)return null; const p=t.split(":").map(Number); if(p.length<2||isNaN(p[0])||isNaN(p[1]))return null; return p[0]*60+p[1];}
 function calcMinutes(){
@@ -782,6 +791,10 @@ document.addEventListener("DOMContentLoaded",function(){
   calcRisk(); updateName();
  $("startBtn").addEventListener("click",startTask);
  $("gpsBtn").addEventListener("click",getGps);
+ document.querySelectorAll("#riskRows select").forEach(s=>{
+  s.addEventListener("change",()=>{calcRisk();sync();queueSave();});
+  s.addEventListener("input",()=>{calcRisk();sync();queueSave();});
+ });
  $("doneBtn").addEventListener("click",done);
  const manualSaveBtn=$("manualSaveBtn"); if(manualSaveBtn) manualSaveBtn.addEventListener("click",()=>saveToBackend("ManualSave"));
  document.querySelectorAll("input,select,textarea").forEach(e=>{
