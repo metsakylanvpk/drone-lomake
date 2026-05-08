@@ -974,8 +974,13 @@ function checkRecovery(){
  }catch(e){}
 }
 
+function currentTimeHHMM(){
+ const d = new Date();
+ return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+}
+
 document.addEventListener("DOMContentLoaded",function(){
- const today=new Date().toISOString().slice(0,10); $("startDate").value=today;
+ const today=new Date().toISOString().slice(0,10); $("startDate").value=today; if($("startTime") && !$("startTime").value) $("startTime").value=currentTimeHHMM();
   calcRisk(); updateName(); checkRecovery();
  $("startBtn").addEventListener("click",startTask);
  $("gpsBtn").addEventListener("click",getGps);
