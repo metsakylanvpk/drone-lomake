@@ -68,9 +68,27 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
   .nav a,.nav button{font-size:14px;padding:12px 8px}
   .head h2{font-size:19px}
 }
+
+.recovermodal{position:fixed;inset:0;background:rgba(15,23,42,.65);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.recoverbox{background:#fff;border-radius:20px;max-width:520px;width:100%;padding:22px;border:1px solid var(--line);box-shadow:0 15px 50px rgba(0,0,0,.25)}
+.recoverbox h3{margin-top:0}
+.recoveractions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+
 </style>
 </head>
 <body>
+
+<div id="recoverModal" class="recovermodal">
+  <div class="recoverbox">
+    <h3>Keskeneräinen tehtävä löytyi</h3>
+    <div id="recoverText">Selaimeen on tallennettu keskeneräinen tehtävä.</div>
+    <div class="recoveractions">
+      <button type="button" id="recoverContinueBtn">Jatka keskeneräistä</button>
+      <button type="button" id="recoverNewBtn" class="secondary">Aloita uusi tyhjä tehtävä</button>
+    </div>
+  </div>
+</div>
+
 
 <div class="top">
   <div class="title">VPK UAS – mobile stable beta</div>
@@ -536,7 +554,13 @@ function sync(){
 function collect(){
  return {name:taskName(), savedAt:new Date().toISOString(), fields:[...document.querySelectorAll("input,select,textarea")].map(e=>({id:e.id,type:e.type,value:(e.type==="checkbox"||e.type==="radio")?e.checked:e.value}))};
 }
-function autosave(){try{localStorage.setItem("vpk_uas_"+taskName(),JSON.stringify(collect()));}catch(e){}}
+function autosave(){
+ try{
+   const key = "vpk_uas_" + taskName();
+   localStorage.setItem(key, JSON.stringify(collect()));
+   saveLastTaskKey();
+ }catch(e){}
+}
 function saveFlash(){autosave(); const s=$("savedInfo"); s.style.display="block"; setTimeout(()=>s.style.display="none",2000);}
 function startTask(){
  if(!val("startDate")||!val("startTime")||!val("startPlace")){$("startError").classList.remove("hidden"); return;}
@@ -838,6 +862,10 @@ function finishTask(){
  currentTaskStatus = "Valmis";
  saveFlash();
  saveToBackend("FinalSave", "Valmis");
+ try{
+   localStorage.removeItem("vpk_uas_" + taskName());
+   localStorage.removeItem("vpk_uas_last_task");
+ }catch(e){}
  setSaveStatus("Tehtävä merkitty valmiiksi", "ok");
 }
 
@@ -845,6 +873,10 @@ function cancelTask(){
  currentTaskStatus = "Keskeytetty";
  saveFlash();
  saveToBackend("CancelTask", "Keskeytetty");
+ try{
+   localStorage.removeItem("vpk_uas_" + taskName());
+   localStorage.removeItem("vpk_uas_last_task");
+ }catch(e){}
  setSaveStatus("Tehtävä merkitty keskeytetyksi", "wait");
 }
 
@@ -873,9 +905,78 @@ function setupOpenLogButton(){
  updateLogButton();
 }
 
+
+function saveLastTaskKey(){
+ try{
+   localStorage.setItem("vpk_uas_last_task", "vpk_uas_" + taskName());
+ }catch(e){}
+}
+
+function restoreTask(data){
+ if(!data || !data.fields) return;
+ data.fields.forEach(f=>{
+   if(!f.id) return;
+   const el = document.getElementById(f.id);
+   if(!el) return;
+   if(f.type === "checkbox" || f.type === "radio"){
+     el.checked = !!f.value;
+   }else{
+     el.value = f.value || "";
+   }
+ });
+
+ calcRisk();
+ calcMinutes();
+ sync();
+ updateName();
+}
+
+function checkRecovery(){
+ try{
+   const lastKey = localStorage.getItem("vpk_uas_last_task");
+   if(!lastKey) return;
+
+   const raw = localStorage.getItem(lastKey);
+   if(!raw) return;
+
+   const data = JSON.parse(raw);
+   if(!data || !data.name) return;
+
+   const modal = $("recoverModal");
+   const txt = $("recoverText");
+   const continueBtn = $("recoverContinueBtn");
+   const newBtn = $("recoverNewBtn");
+
+   if(txt){
+     txt.textContent = "Löytyi keskeneräinen tehtävä: " + data.name;
+   }
+
+   if(continueBtn){
+     continueBtn.addEventListener("click", ()=>{
+       restoreTask(data);
+       if(modal) modal.style.display = "none";
+       setSaveStatus("Keskeneräinen tehtävä palautettu", "ok");
+     });
+   }
+
+   if(newBtn){
+     newBtn.addEventListener("click", ()=>{
+       localStorage.removeItem(lastKey);
+       localStorage.removeItem("vpk_uas_last_task");
+       if(modal) modal.style.display = "none";
+       setSaveStatus("Aloitetaan uusi tyhjä tehtävä", "wait");
+     });
+   }
+
+   if(modal){
+     modal.style.display = "flex";
+   }
+ }catch(e){}
+}
+
 document.addEventListener("DOMContentLoaded",function(){
  const today=new Date().toISOString().slice(0,10); $("startDate").value=today;
-  calcRisk(); updateName();
+  calcRisk(); updateName(); checkRecovery();
  $("startBtn").addEventListener("click",startTask);
  $("gpsBtn").addEventListener("click",getGps);
  document.querySelectorAll("#riskRows select").forEach(s=>{
