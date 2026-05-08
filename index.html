@@ -59,7 +59,15 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 .summary{background:#f8fafc;border:1px dashed var(--line);border-radius:14px;padding:12px;line-height:1.55}
 .timeTable{width:100%;border-collapse:collapse}.timeTable th,.timeTable td{border:1px solid var(--line);padding:8px}.timeTable th{background:#e5e7eb;text-align:left}
 .saved{display:none;background:var(--okbg);border:1px solid #86efac;color:var(--ok);border-radius:13px;padding:10px;margin-top:10px;font-weight:900}
-@media(max-width:850px){.grid2,.grid3,.inlinechecks,.nav{grid-template-columns:1fr}.head h2{font-size:19px}}
+.mobilemenubtn{display:none;margin-top:8px;width:100%;background:var(--primary);color:#fff}
+@media(max-width:850px){
+  .grid2,.grid3,.inlinechecks{grid-template-columns:1fr}
+  .mobilemenubtn{display:block}
+  .nav{display:none;grid-template-columns:1fr}
+  .nav.open{display:grid}
+  .nav a,.nav button{font-size:14px;padding:12px 8px}
+  .head h2{font-size:19px}
+}
 </style>
 </head>
 <body>
@@ -68,7 +76,8 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
   <div class="title">VPK UAS – mobile stable beta</div>
   <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
   <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
-  <div class="nav">
+  <button type="button" id="mobileMenuBtn" class="mobilemenubtn">☰ Siirry osioon</button>
+  <div class="nav" id="mainNav">
     <a href="#checklist">Tarkistuslista</a>
     <a href="#risk">Riskinarviointi</a>
     <a href="#plan">Lentosuunnitelma</a>
@@ -849,6 +858,14 @@ document.addEventListener("DOMContentLoaded",function(){
  });
  $("doneBtn").addEventListener("click",done);
  const manualSaveBtn=$("manualSaveBtn"); if(manualSaveBtn) manualSaveBtn.addEventListener("click",()=>saveToBackend("ManualSave"));
+ const mobileMenuBtn=$("mobileMenuBtn");
+ const mainNav=$("mainNav");
+ if(mobileMenuBtn && mainNav){
+   mobileMenuBtn.addEventListener("click",()=>mainNav.classList.toggle("open"));
+   mainNav.querySelectorAll("a,button").forEach(el=>{
+     el.addEventListener("click",()=>mainNav.classList.remove("open"));
+   });
+ }
  const finishTaskBtn=$("finishTaskBtn"); if(finishTaskBtn) finishTaskBtn.addEventListener("click",finishTask);
  const cancelTaskBtn=$("cancelTaskBtn"); if(cancelTaskBtn) cancelTaskBtn.addEventListener("click",cancelTask);
  setupOpenLogButton();
