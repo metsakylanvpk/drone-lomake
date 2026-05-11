@@ -133,7 +133,7 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta hallinta-2 final-lock</div>
+<div class="title">VPK UAS – beta hallinta fixed-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -484,6 +484,20 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 </div>
 </div>
 </section>
+
+<section id="admin" class="card">
+  <div class="head start"><h2>Hallinta / Arkisto</h2></div>
+  <div class="body">
+    <div class="notice">Hallinnassa voit hakea tehtävät tietokannasta, avata valitusta tehtävästä raportin ja poistaa testitehtäviä. Poisto kysyy varmistuksen ja poistaa rivit kaikista tehtävävälilehdistä samalla tehtävänimellä.</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <button type="button" id="loadTasksBtn">Hae tehtävät tietokannasta</button>
+      <button type="button" id="refreshTasksBtn" class="secondary">Päivitä lista</button>
+    </div>
+    <div id="adminStatus" class="file">Tehtävälistaa ei ole vielä haettu.</div>
+    <div id="taskList" class="adminlist" style="margin-top:12px"></div>
+  </div>
+</section>
+
 </section>
 </div>
 <script>
