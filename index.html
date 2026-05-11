@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>VPK UAS beta recovery idfix</title>
+<title>VPK UAS beta final-lock</title>
 <style>
 :root{
   --bg:#eef2f7;--card:#fff;--line:#d4dce8;--ink:#0f172a;--muted:#667085;
@@ -90,7 +90,7 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – mobile stable beta idfix</div>
+<div class="title">VPK UAS – mobile stable beta final-lock final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -111,7 +111,7 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 <div class="field"><label>Päivämäärä</label><input id="startDate" type="date"/></div>
 <div class="field"><label>Kellonaika</label><input id="startTime" type="time"/></div>
 <div class="field"><label>Paikka</label><input id="startPlace" placeholder="esim. Klaukkala"/></div>
-<div class="field"><label>Käytettävä ilma-alus</label><select id="startAircraft"><option selected="">DJI Matrice 4TD</option><option>DJI Mini 3</option></select></div>
+<div class="field"><label>Käytettävä drone</label><select id="startAircraft"><option selected="">DJI Matrice 4TD</option><option>DJI Mini 3</option></select></div>
 </div>
 <div style="margin-top:12px">
 <button id="startBtn" type="button">Aloita tehtävä</button>
@@ -193,7 +193,7 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 <div class="field"><label>Joku muu, mikä</label><input id="missionOther"/></div>
 <div class="field"><label>Lentokorkeus (m)</label><input id="altitude" type="number"/></div>
 <div class="field"><label>Toiminta-alue</label><input id="area"/></div>
-<div class="field"><label>Käytettävä ilma-alus</label><input id="aircraft" readonly></div>
+<div class="field"><label>Käytettävä ilma-alus</label><input id="aircraft" readonly=""></div>
 <div class="field"><label>Viestivälineet ja taajuudet</label><div class="grid2"><input id="virve" placeholder="Virve esim. KUVPK40"/><input id="vhf" placeholder="VHF esim. kanava 3"/></div></div>
 </div>
 <div class="sectiontitle">Lentoalueen ennakkotiedustelu</div>
@@ -425,7 +425,7 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 <div class="field"><label>Lennon lähtö- ja laskupaikka</label><input id="logPlace"/></div>
 <div class="field"><label>Lennon lähtö- ja laskupaikan GPS</label><input id="logGps" placeholder="Ei haettu" readonly=""/></div>
 <div class="field"><label>Ilma-aluksen päällikkö</label><input id="logCaptain"/></div>
-<div class="field"><label>Ilma-aluksen tai ilma-alusjärjestelmän valmistaja ja malli</label><input id="logAircraft" readonly></div>
+<div class="field"><label>Ilma-aluksen tai ilma-alusjärjestelmän valmistaja ja malli</label><input id="logAircraft"/></div>
 <div class="field"><label>Alkamisaika</label><input id="logStart" type="time"/></div>
 <div class="field"><label>Päättymisaika</label><input id="logEnd" type="time"/></div>
 </div>
@@ -574,6 +574,7 @@ let backendSaveTimer = null;
 let lastBackendSave = 0;
 let currentTaskStatus = "Kesken";
 let currentTaskName = "";
+let taskClosing = false;
 
 function setSaveStatus(text, cls){
  const el=$("saveStatus");
@@ -844,41 +845,61 @@ function queueBackendSave(){
 }
 
 async function finishTask(){
+ if(taskClosing) return;
+ taskClosing = true;
 
-  currentTaskStatus = "Valmis";
+ const finishBtn = $("finishTaskBtn");
+ const cancelBtn = $("cancelTaskBtn");
 
-  await saveToBackend("FinishTask");
+ if(finishBtn){
+   finishBtn.disabled = true;
+   finishBtn.textContent = "Tallennetaan...";
+ }
+ if(cancelBtn) cancelBtn.disabled = true;
 
-  try{
-    localStorage.removeItem("vpk_uas_" + taskName());
-    localStorage.removeItem("vpk_uas_last_task");
-    currentTaskName = "";
-  }catch(e){}
+ currentTaskStatus = "Valmis";
+ await saveToBackend("FinalSave", "Valmis");
 
-  setSaveStatus("Tehtävä merkitty valmiiksi", "ok");
+ try{
+   localStorage.removeItem("vpk_uas_" + taskName());
+   localStorage.removeItem("vpk_uas_last_task");
+   currentTaskName = "";
+ }catch(e){}
 
-  setTimeout(()=>{
-    location.href = location.pathname + "?newtask=" + Date.now();
-  }, 800);
+ setSaveStatus("Tehtävä merkitty valmiiksi", "ok");
+
+ setTimeout(()=>{
+   window.location.assign(window.location.origin + window.location.pathname + "?newtask=" + Date.now());
+ }, 1000);
 }
 
 async function cancelTask(){
+ if(taskClosing) return;
+ taskClosing = true;
 
-  currentTaskStatus = "Keskeytetty";
+ const cancelBtn = $("cancelTaskBtn");
+ const finishBtn = $("finishTaskBtn");
 
-  await saveToBackend("CancelTask");
+ if(cancelBtn){
+   cancelBtn.disabled = true;
+   cancelBtn.textContent = "Tallennetaan...";
+ }
+ if(finishBtn) finishBtn.disabled = true;
 
-  try{
-    localStorage.removeItem("vpk_uas_" + taskName());
-    localStorage.removeItem("vpk_uas_last_task");
-    currentTaskName = "";
-  }catch(e){}
+ currentTaskStatus = "Keskeytetty";
+ await saveToBackend("CancelTask", "Keskeytetty");
 
-  setSaveStatus("Tehtävä merkitty keskeytetyksi", "wait");
+ try{
+   localStorage.removeItem("vpk_uas_" + taskName());
+   localStorage.removeItem("vpk_uas_last_task");
+   currentTaskName = "";
+ }catch(e){}
 
-  setTimeout(()=>{
-    location.href = location.pathname + "?newtask=" + Date.now();
-  }, 800);
+ setSaveStatus("Tehtävä merkitty keskeytetyksi", "wait");
+
+ setTimeout(()=>{
+   window.location.assign(window.location.origin + window.location.pathname + "?newtask=" + Date.now());
+ }, 1000);
 }
 
 function setupOpenLogButton(){
