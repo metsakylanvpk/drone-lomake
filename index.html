@@ -914,10 +914,12 @@ function saveLastTaskKey(){
 
 function restoreTask(data){
  if(!data || !data.fields) return;
+
  data.fields.forEach(f=>{
    if(!f.id) return;
    const el = document.getElementById(f.id);
    if(!el) return;
+
    if(f.type === "checkbox" || f.type === "radio"){
      el.checked = !!f.value;
    }else{
@@ -925,10 +927,38 @@ function restoreTask(data){
    }
  });
 
+ if($("startDate") && $("date") && !$("date").value) $("date").value = $("startDate").value;
+ if($("startTime") && $("time") && !$("time").value) $("time").value = $("startTime").value;
+ if($("startPlace") && $("place") && !$("place").value) $("place").value = $("startPlace").value;
+ if($("startAircraft") && $("aircraft") && !$("aircraft").value) $("aircraft").value = $("startAircraft").value;
+
+ if($("date") && $("startDate") && !$("startDate").value) $("startDate").value = $("date").value;
+ if($("time") && $("startTime") && !$("startTime").value) $("startTime").value = $("time").value;
+ if($("place") && $("startPlace") && !$("startPlace").value) $("startPlace").value = $("place").value;
+ if($("aircraft") && $("startAircraft") && !$("startAircraft").value) $("startAircraft").value = $("aircraft").value;
+
+ if(data.name && (!$("date").value || !$("time").value || !$("place").value)){
+   const parts = String(data.name).split("_");
+   if(parts.length >= 3){
+     if($("date") && !$("date").value) $("date").value = parts[0];
+     if($("startDate") && !$("startDate").value) $("startDate").value = parts[0];
+
+     if($("time") && !$("time").value && parts[1]){
+       const t = parts[1].length === 4 ? parts[1].slice(0,2) + ":" + parts[1].slice(2) : parts[1];
+       $("time").value = t;
+       if($("startTime")) $("startTime").value = t;
+     }
+
+     if($("place") && !$("place").value) $("place").value = parts[2];
+     if($("startPlace") && !$("startPlace").value) $("startPlace").value = parts[2];
+   }
+ }
+
  calcRisk();
  calcMinutes();
  sync();
  updateName();
+ autosave();
 }
 
 function checkRecovery(){
@@ -955,7 +985,7 @@ function checkRecovery(){
      continueBtn.addEventListener("click", ()=>{
        restoreTask(data);
        if(modal) modal.style.display = "none";
-       setSaveStatus("Keskeneräinen tehtävä palautettu", "ok");
+       setSaveStatus("Keskeneräinen tehtävä palautettu: " + taskName(), "ok");
      });
    }
 
