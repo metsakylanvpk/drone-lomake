@@ -566,7 +566,7 @@ function startTask(){
  if(!val("startDate")||!val("startTime")||!val("startPlace")){$("startError").classList.remove("hidden"); return;}
  $("startError").classList.add("hidden");
  $("date").value=val("startDate"); $("time").value=val("startTime"); $("place").value=val("startPlace"); if($("startAircraft") && $("aircraft")) $("aircraft").value=val("startAircraft");
- sync(); autosave(); saveToBackend("StartTask"); location.hash="#checklist";
+ sync(); autosave(); saveLastTaskKey(); saveToBackend("StartTask"); location.hash="#checklist";
 }
 function done(){
  $("chkRiskPlan").checked=true;
@@ -908,7 +908,11 @@ function setupOpenLogButton(){
 
 function saveLastTaskKey(){
  try{
-   localStorage.setItem("vpk_uas_last_task", "vpk_uas_" + taskName());
+   const key = "vpk_uas_" + taskName();
+   const name = taskName();
+   if(!val("date") || !val("time") || !val("place")) return;
+   if(name.indexOf("_Paikka_") !== -1 || name.endsWith("_Paikka")) return;
+   localStorage.setItem("vpk_uas_last_task", key);
  }catch(e){}
 }
 
@@ -961,17 +965,52 @@ function restoreTask(data){
  autosave();
 }
 
-function checkRecovery(){
+
+function findLatestRecoverableTask(){
+ let best = null;
+
  try{
    const lastKey = localStorage.getItem("vpk_uas_last_task");
-   if(!lastKey) return;
+   if(lastKey){
+     const raw = localStorage.getItem(lastKey);
+     if(raw){
+       const data = JSON.parse(raw);
+       if(data && data.name && data.name.indexOf("_Paikka_") === -1 && !data.name.endsWith("_Paikka")){
+         best = {key:lastKey, data:data};
+       }
+     }
+   }
 
-   const raw = localStorage.getItem(lastKey);
-   if(!raw) return;
+   for(let i=0;i<localStorage.length;i++){
+     const key = localStorage.key(i);
+     if(!key || !key.startsWith("vpk_uas_") || key === "vpk_uas_last_task") continue;
 
-   const data = JSON.parse(raw);
-   if(!data || !data.name) return;
+     const raw = localStorage.getItem(key);
+     if(!raw) continue;
 
+     let data = null;
+     try{ data = JSON.parse(raw); }catch(e){ continue; }
+     if(!data || !data.name || !data.fields) continue;
+     if(data.name.indexOf("_Paikka_") !== -1 || data.name.endsWith("_Paikka")) continue;
+
+     const saved = data.savedAt ? Date.parse(data.savedAt) : 0;
+     const bestSaved = best && best.data && best.data.savedAt ? Date.parse(best.data.savedAt) : -1;
+
+     if(!best || saved > bestSaved){
+       best = {key:key, data:data};
+     }
+   }
+ }catch(e){}
+
+ return best;
+}
+
+function checkRecovery(){
+ try{
+   const found = findLatestRecoverableTask();
+   if(!found || !found.data) return;
+
+   const data = found.data;
    const modal = $("recoverModal");
    const txt = $("recoverText");
    const continueBtn = $("recoverContinueBtn");
@@ -984,6 +1023,7 @@ function checkRecovery(){
    if(continueBtn){
      continueBtn.addEventListener("click", ()=>{
        restoreTask(data);
+       try{ localStorage.setItem("vpk_uas_last_task", found.key); }catch(e){}
        if(modal) modal.style.display = "none";
        setSaveStatus("Keskeneräinen tehtävä palautettu: " + taskName(), "ok");
      });
@@ -991,8 +1031,10 @@ function checkRecovery(){
 
    if(newBtn){
      newBtn.addEventListener("click", ()=>{
-       localStorage.removeItem(lastKey);
-       localStorage.removeItem("vpk_uas_last_task");
+       try{
+         localStorage.removeItem(found.key);
+         localStorage.removeItem("vpk_uas_last_task");
+       }catch(e){}
        if(modal) modal.style.display = "none";
        setSaveStatus("Aloitetaan uusi tyhjä tehtävä", "wait");
      });
