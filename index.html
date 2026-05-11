@@ -843,28 +843,42 @@ function queueBackendSave(){
  backendSaveTimer = setTimeout(()=>saveToBackend("Autosave"), 1500);
 }
 
-function finishTask(){
- currentTaskStatus = "Valmis";
- saveFlash();
- saveToBackend("FinalSave", "Valmis");
- try{
-   localStorage.removeItem("vpk_uas_" + taskName());
-   localStorage.removeItem("vpk_uas_last_task");
-         currentTaskName = "";
- }catch(e){}
- setSaveStatus("Tehtävä merkitty valmiiksi", "ok");
+async function finishTask(){
+
+  currentTaskStatus = "Valmis";
+
+  await saveToBackend("FinishTask");
+
+  try{
+    localStorage.removeItem("vpk_uas_" + taskName());
+    localStorage.removeItem("vpk_uas_last_task");
+    currentTaskName = "";
+  }catch(e){}
+
+  setSaveStatus("Tehtävä merkitty valmiiksi", "ok");
+
+  setTimeout(()=>{
+    location.href = location.pathname + "?newtask=" + Date.now();
+  }, 800);
 }
 
-function cancelTask(){
- currentTaskStatus = "Keskeytetty";
- saveFlash();
- saveToBackend("CancelTask", "Keskeytetty");
- try{
-   localStorage.removeItem("vpk_uas_" + taskName());
-   localStorage.removeItem("vpk_uas_last_task");
-         currentTaskName = "";
- }catch(e){}
- setSaveStatus("Tehtävä merkitty keskeytetyksi", "wait");
+async function cancelTask(){
+
+  currentTaskStatus = "Keskeytetty";
+
+  await saveToBackend("CancelTask");
+
+  try{
+    localStorage.removeItem("vpk_uas_" + taskName());
+    localStorage.removeItem("vpk_uas_last_task");
+    currentTaskName = "";
+  }catch(e){}
+
+  setSaveStatus("Tehtävä merkitty keskeytetyksi", "wait");
+
+  setTimeout(()=>{
+    location.href = location.pathname + "?newtask=" + Date.now();
+  }, 800);
 }
 
 function setupOpenLogButton(){
