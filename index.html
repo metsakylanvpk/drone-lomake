@@ -101,6 +101,25 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
   .reporttop button{display:none}
 }
 
+
+.checkreport{display:grid;gap:7px}
+.checkitem{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:8px;background:#f8fafc}
+.checkmark{font-weight:900;min-width:24px}
+.riskreportcards{display:grid;gap:8px}
+.riskreportcard{border:1px solid var(--line);border-radius:12px;padding:10px}
+.riskreporttop{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.riskreportname{font-weight:900}
+.riskpill{border-radius:999px;padding:4px 9px;font-weight:900;font-size:12px}
+.riskpill.r0{background:#dcfce7;color:#166534}
+.riskpill.r1{background:#ecfccb;color:#3f6212}
+.riskpill.r3{background:#fef3c7;color:#92400e}
+.riskpill.r5{background:#fee2e2;color:#991b1b}
+.report-subtitle{font-size:13px;color:var(--muted);margin:4px 0 12px}
+.report-titleline{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.report-table{width:100%;border-collapse:collapse}
+.report-table th,.report-table td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+.report-table th{background:#e5e7eb}
+
 </style>
 </head>
 <body>
@@ -133,7 +152,7 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta hallinta fixed 2-2 final-lock</div>
+<div class="title">VPK UAS – beta hallinta raportti+-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -1175,13 +1194,239 @@ function statusBadgeClass(status){
  return "badge kesken";
 }
 
-function renderReportSection(title, data){
- if(!data) return `<div class="reportsection"><h3>${escHtml(title)}</h3><div>Ei tietoja.</div></div>`;
- const keys = Object.keys(data).filter(k => data[k] !== "" && data[k] !== null && typeof data[k] !== "undefined");
- let rows = keys.map(k => `<div class="reportkey">${escHtml(labelize(k))}</div><div class="reportval">${escHtml(data[k])}</div>`).join("");
- if(!rows) rows = "<div>Ei täytettyjä tietoja.</div>";
- return `<div class="reportsection"><h3>${escHtml(title)}</h3><div class="reportgrid">${rows}</div></div>`;
+
+function boolIcon(v){
+ const s = String(v).toLowerCase();
+ return (v === true || s === "true" || s === "kyllä" || s === "x" || s === "1") ? "✅" : "⬜";
 }
+
+function boolText(v){
+ const s = String(v).toLowerCase();
+ return (v === true || s === "true" || s === "kyllä" || s === "x" || s === "1") ? "Tehty" : "Ei tehty";
+}
+
+function nonEmpty(v){
+ return v !== "" && v !== null && typeof v !== "undefined";
+}
+
+function fieldRow(label, value){
+ if(!nonEmpty(value)) return "";
+ return `<div class="reportkey">${escHtml(label)}</div><div class="reportval">${escHtml(value)}</div>`;
+}
+
+function checkItem(label, value){
+ return `<div class="checkitem"><span class="checkmark">${boolIcon(value)}</span><span>${escHtml(label)}</span></div>`;
+}
+
+function riskScoreFromValue(v){
+ const raw = String(v || "").trim().toUpperCase();
+ if(raw === "MATALA") return 1;
+ if(raw === "KESKI") return 3;
+ if(raw === "KORKEA") return 5;
+ return 0;
+}
+
+function riskCard(label, value, score){
+ const s = nonEmpty(score) ? Number(score) : riskScoreFromValue(value);
+ const cls = (s === 5 ? "r5" : (s === 3 ? "r3" : (s === 1 ? "r1" : "r0")));
+ return `<div class="riskreportcard">
+   <div class="riskreporttop">
+     <div class="riskreportname">${escHtml(label)}</div>
+     <div class="riskpill ${cls}">${escHtml(value || "EI RISKIÄ")} · ${s} p</div>
+   </div>
+ </div>`;
+}
+
+function section(title, inner, subtitle){
+ return `<div class="reportsection"><h3>${escHtml(title)}</h3>${subtitle ? `<div class="report-subtitle">${escHtml(subtitle)}</div>` : ""}${inner || "<div>Ei tietoja.</div>"}</div>`;
+}
+
+function grid(inner){
+ return `<div class="reportgrid">${inner || ""}</div>`;
+}
+
+function renderTaskSummary(data){
+ if(!data) return section("Tehtävä / tila", "Ei tietoja.");
+ const tila = data.Tila || "Kesken";
+ const badge = `<span class="${statusBadgeClass(tila)}">${escHtml(tila)}</span>`;
+ let top = `<div class="report-titleline">${badge}<strong>${escHtml(data.TehtavaNimi || "")}</strong></div>`;
+ let rows = "";
+ rows += fieldRow("Päivämäärä", data.Paivamaara);
+ rows += fieldRow("Kellonaika", data.Kellonaika);
+ rows += fieldRow("Paikka", data.Paikka);
+ rows += fieldRow("GPS", data.GPS);
+ rows += fieldRow("Kauko-ohjaaja", data.KaukoOhjaaja);
+ rows += fieldRow("Tähystäjä", data.Tahystaja);
+ rows += fieldRow("Pel.toim.joht.", data.PelToimJohtaja);
+ rows += fieldRow("Lentotehtävä", [data.Lentotehtava, data.LentotehtavaMuu].filter(Boolean).join(" / "));
+ rows += fieldRow("Ilma-alus", data.KaytettavaIlmaAlus);
+ return section("Tehtävä / tila", top + grid(rows));
+}
+
+function renderChecklist(data){
+ if(!data) return section("Tarkistuslista", "Ei tietoja.");
+ const labels = [
+  ["RiskinarviointiJaLentosuunnitelma","Kirjallinen riskinarviointi ja lentosuunnitelma"],
+  ["NousuJaLaskupaikkaPerustettu","Nousu- ja laskupaikan perustaminen"],
+  ["LaskeutumisalustaSijoitettu","Lähtö- ja laskeutumisalusta sijoitettu dronen alle"],
+  ["IlmoitusLennonjohto","Ilmoitus: Lennonjohto"],
+  ["IlmoitusAMC","Ilmoitus: AMC"],
+  ["IlmoitusPuolustusvoimat","Ilmoitus: Puolustusvoimat"],
+  ["IlmoitusRajavartiolaitos","Ilmoitus: Rajavartiolaitos"],
+  ["NayttoLiitettyOhjaimeen","Näyttö liitetty ohjaimeen"],
+  ["KaytettavaOhjelmaAvattu","Käytettävä ohjelma avattu"],
+  ["OhjainKaynnistetty","Ohjain käynnistetty"],
+  ["OhjaimenJaNaytonAkkuRiittava","Ohjaimen ja näytön akun varaus riittävä"],
+  ["DroneSilmamaaraisestiTarkastettu","Dronen kunto tarkastettu"],
+  ["PropellitTarkastettu","Propellit tarkastettu"],
+  ["GimbaalinTukiPoistettu","Gimbaalin tuki/suojus poistettu"],
+  ["DroneKaynnistettyAkutTarkistettu","Drone käynnistetty ja akut tarkistettu"],
+  ["YhteysDroneenMuodostettu","Yhteys droneen muodostettu"],
+  ["MerkkivalotToimivat","Merkkivalot toimivat"],
+  ["KameranAsetuksetValittu","Kameran asetukset valittu"],
+  ["MuistikorttiJaTallennustilaOK","Muistikortti ja tallennustila OK"],
+  ["NaytonVirheilmoituksetTarkistettu","Näytön virheilmoitukset tarkistettu"],
+  ["KompassiKalibroituTarvittaessa","Kompassi kalibroitu tarvittaessa"],
+  ["RTHPaikkaJaKorkeusAsetettu","RTH-paikka ja -korkeus asetettu"],
+  ["RoottoritKaynnistetty","Roottorit käynnistetty"],
+  ["LeijutustestiTehty","Leijutustesti tehty"],
+  ["EpatavallisetAanetTarkistettu","Epätavalliset äänet tarkistettu"],
+  ["SatelliittipaikannusOK","Satelliittipaikannus OK"],
+  ["OhjausToimiiNormaalisti","Ohjaus toimii normaalisti"],
+  ["LaskeutumispaikkaTurvallinen","Laskeutumispaikka turvallinen"],
+  ["KameraVaakatasoonEnnenLaskua","Kamera vaakatasoon ennen laskua"],
+  ["LaskeuduttuMerkatullePaikalle","Laskeuduttu merkitylle paikalle"],
+  ["LopetusilmoitusLennonjohto","Lopetusilmoitus: Lennonjohto"],
+  ["LopetusilmoitusAMC","Lopetusilmoitus: AMC"],
+  ["LopetusilmoitusPuolustusvoimat","Lopetusilmoitus: Puolustusvoimat"],
+  ["LopetusilmoitusRajavartiolaitos","Lopetusilmoitus: Rajavartiolaitos"],
+  ["DronePuhdistettu","Drone puhdistettu"],
+  ["PropellitJaKuntoTarkistettu","Propellit ja kunto tarkistettu"],
+  ["HuoltoJaPaivitystarveMaaritetty","Huolto- ja päivitystarve määritetty"],
+  ["AkutLadattu","Akut ladattu"],
+  ["LennatystapahtumaKirjattu","Lennätystapahtuma kirjattu"]
+ ];
+ let items = labels.map(([key,label]) => checkItem(label, data[key])).join("");
+ if(data.LennonAloitusPaatos) items = `<div class="notice"><strong>Lennon aloituspäätös:</strong> ${escHtml(data.LennonAloitusPaatos)}</div>` + items;
+ return section("Tarkistuslista", `<div class="checkreport">${items}</div>`);
+}
+
+function renderRiskReport(data){
+ if(!data) return section("Riskinarviointi", "Ei tietoja.");
+ let base = "";
+ base += fieldRow("Paikka", data.Paikka);
+ base += fieldRow("Päivämäärä", data.Paivamaara);
+ base += fieldRow("Kellonaika", data.Kellonaika);
+ base += fieldRow("GPS", data.GPS);
+ base += fieldRow("Kauko-ohjaaja", data.KaukoOhjaaja);
+ base += fieldRow("Tähystäjä", data.Tahystaja);
+ base += fieldRow("Lentotehtävä", [data.Lentotehtava, data.LentotehtavaMuu].filter(Boolean).join(" / "));
+ base += fieldRow("Ilma-alus", data.KaytettavaIlmaAlus);
+ base += fieldRow("Toiminta-alue", data.ToimintaAlue);
+ base += fieldRow("Lentokorkeus", data.Lentokorkeus);
+
+ const risks = [
+  ["1. Tehtävä", data.RiskiTehtava, data.RiskiTehtavaPisteet],
+  ["2. Toiminta-alue", data.RiskiToimintaAlue, data.RiskiToimintaAluePisteet],
+  ["3. Fyysiset esteet", data.RiskiFyysisetEsteet, data.RiskiFyysisetEsteetPisteet],
+  ["4. Ihmismäärä", data.RiskiIhmismaara, data.RiskiIhmismaaraPisteet],
+  ["5. Signaalihäiriöt", data.RiskiSignaalihairiot, data.RiskiSignaalihairiotPisteet],
+  ["6. Ilmatila", data.RiskiIlmatila, data.RiskiIlmatilaPisteet],
+  ["7. Tuuli, puuskat ja turbulenssi", data.RiskiTuuliPuuskatTurbulenssi, data.RiskiTuuliPuuskatTurbulenssiPisteet],
+  ["8. Lämpötila", data.RiskiLampotila, data.RiskiLampotilaPisteet],
+  ["9. Jäätäminen / kosteus", data.RiskiJaaminenKosteus, data.RiskiJaaminenKosteusPisteet],
+  ["10. Näkyvyys / valoisuus", data.RiskiNakyvyysValoisuus, data.RiskiNakyvyysValoisuusPisteet],
+  ["11. Laitteiston soveltuvuus", data.RiskiLaitteistonSoveltuvuus, data.RiskiLaitteistonSoveltuvuusPisteet],
+  ["12. Lentäjän soveltuvuus", data.RiskiLentajanSoveltuvuus, data.RiskiLentajanSoveltuvuusPisteet]
+ ];
+ const total = Number(data.Kokonaisriski || 0);
+ const totalCls = total < 20 ? "green" : (total > 40 ? "red" : "yellow");
+ let riskHtml = `<div class="kpi ${totalCls}"><div class="label">Kokonaisriski tehtävällä</div><div class="value">${escHtml(data.Kokonaisriski || "0")}</div></div>`;
+ riskHtml += `<div class="riskreportcards">${risks.map(r => riskCard(r[0], r[1], r[2])).join("")}</div>`;
+
+ let tail = "";
+ tail += fieldRow("Riskien vähentäminen", data.RiskienVahentaminen);
+ tail += fieldRow("Maksimi lentokorkeus", data.MaksimiLentokorkeus);
+ tail += fieldRow("Minimi lentokorkeus", data.MinimiLentokorkeus);
+ tail += fieldRow("Toiminta häiriötilanteessa", data.ToimintaHairiotilanteessa);
+ tail += fieldRow("PTJ-päätös", data.PTJPaatos);
+ tail += fieldRow("Muistiinpanot", data.Muistiinpanot);
+
+ return section("Riskinarviointi", grid(base) + riskHtml + grid(tail));
+}
+
+function renderPlanReport(data){
+ if(!data) return section("Lentosuunnitelma", "Ei tietoja.");
+ let rows = "";
+ rows += fieldRow("Paikka", data.Paikka);
+ rows += fieldRow("Päivämäärä", data.Paivamaara);
+ rows += fieldRow("Kellonaika", data.Kellonaika);
+ rows += fieldRow("Kauko-ohjaaja", data.KaukoOhjaaja);
+ rows += fieldRow("Tähystäjä", data.Tahystaja);
+ rows += fieldRow("Ilma-alus", data.KaytettavaIlmaAlus);
+ rows += fieldRow("Operaatiomalli", data.Operaatiomalli);
+ rows += fieldRow("Vapaa teksti", data.LentosuunnitelmaVapaaTeksti);
+ rows += fieldRow("Maksimi lentokorkeus", data.MaksimiLentokorkeus);
+ rows += fieldRow("Minimi lentokorkeus", data.MinimiLentokorkeus);
+ rows += fieldRow("Lähtöpaikka", data.Lahtopaikka);
+ rows += fieldRow("Laskupaikka", data.Laskupaikka);
+ rows += fieldRow("GPS", data.LahtoLaskuGPS);
+ rows += fieldRow("VARA1", data.Vara1);
+ rows += fieldRow("HÄTÄ1", data.Hata1);
+ rows += fieldRow("VARA2", data.Vara2);
+ rows += fieldRow("HÄTÄ2", data.Hata2);
+ rows += fieldRow("Toiminnan alkaminen", data.ToiminnanAlkaminen);
+ rows += fieldRow("Toiminnan päättyminen", data.ToiminnanPaattyminen);
+ rows += fieldRow("Lentominuutit yhteensä", data.LentominuutitYhteensa);
+ rows += fieldRow("Muistiinpanot", data.Muistiinpanot);
+
+ const times = [
+  ["1", data.Nousu1, data.Lasku1],
+  ["2", data.Nousu2, data.Lasku2],
+  ["3", data.Nousu3, data.Lasku3],
+  ["4", data.Nousu4, data.Lasku4]
+ ].filter(r => r[1] || r[2]);
+
+ let timeTable = "";
+ if(times.length){
+   timeTable = `<table class="report-table"><thead><tr><th></th><th>Ylös</th><th>Alas</th></tr></thead><tbody>` +
+     times.map(r=>`<tr><td>${escHtml(r[0])}</td><td>${escHtml(r[1]||"")}</td><td>${escHtml(r[2]||"")}</td></tr>`).join("") +
+     `</tbody></table>`;
+ }
+
+ return section("Lentosuunnitelma", grid(rows) + timeTable);
+}
+
+function renderLogReport(data){
+ if(!data) return section("Lentopäiväkirja", "Ei tietoja.");
+ let rows = "";
+ rows += fieldRow("Lennon päivämäärä", data.LennonPaivamaara);
+ rows += fieldRow("Lennon lähtö- ja laskupaikka", data.LennonLahtoJaLaskupaikka);
+ rows += fieldRow("GPS", data.GPS);
+ rows += fieldRow("Ilma-aluksen päällikkö", data.IlmaAluksenPaallikko);
+ rows += fieldRow("Ilma-aluksen valmistaja ja malli", data.IlmaAluksenValmistajaJaMalli);
+ rows += fieldRow("Alkamisaika", data.AlkamisAika);
+ rows += fieldRow("Päättymisaika", data.PaattymisAika);
+ rows += fieldRow("Maksimilentokorkeus", data.Maksimilentokorkeus);
+ rows += fieldRow("Lähempänä kuin 50 m ihmisjoukosta", data.LahempanaKuin50mIhmisjoukosta);
+ rows += fieldRow("Lentotehtävän luonne", data.LentotehtavanLuonne);
+ rows += fieldRow("Erityiset tapahtumat", data.ErityisetTapahtumat);
+ const checks = `<div class="checkreport">
+   ${checkItem("VLOS – näköyhteydessä lennättäminen", data.VLOS)}
+   ${checkItem("EVLOS – laajennettu näköyhteys tähystäjän avulla", data.EVLOS)}
+   ${checkItem("BVLOS – näköyhteyden ulkopuolella lennättäminen", data.BVLOS)}
+ </div>`;
+ return section("Lentopäiväkirja", grid(rows) + checks);
+}
+
+function renderFullReport(r){
+ return renderTaskSummary(r.Tehtavat) +
+   renderChecklist(r.Tarkistuslista) +
+   renderRiskReport(r.Riskinarviointi) +
+   renderPlanReport(r.Lentosuunnitelma) +
+   renderLogReport(r.Lentopaivakirja);
+}
+
 
 async function loadTasks(){
  const list = $("taskList");
@@ -1254,12 +1499,7 @@ async function openReportForTask(tehtavaNimi){
    if(title) title.textContent = r.tehtavaNimi || tehtavaNimi;
 
    if(content){
-     content.innerHTML =
-       renderReportSection("Tehtävä / tila", r.Tehtavat) +
-       renderReportSection("Tarkistuslista", r.Tarkistuslista) +
-       renderReportSection("Riskinarviointi", r.Riskinarviointi) +
-       renderReportSection("Lentosuunnitelma", r.Lentosuunnitelma) +
-       renderReportSection("Lentopäiväkirja", r.Lentopaivakirja);
+     content.innerHTML = renderFullReport(r);
    }
  }catch(err){
    if(content){
