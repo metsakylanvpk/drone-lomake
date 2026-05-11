@@ -133,7 +133,7 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta hallinta fixed-2 final-lock</div>
+<div class="title">VPK UAS – beta hallinta fixed 2-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -1302,6 +1302,10 @@ function closeReport(){
  const modal = $("reportModal");
  if(modal) modal.style.display = "none";
 }
+
+window.openReportForTask = openReportForTask;
+window.deleteTask = deleteTask;
+window.loadTasks = loadTasks;
 
 document.addEventListener("DOMContentLoaded",function(){
  const today=new Date().toISOString().slice(0,10); $("startDate").value=today; if($("startTime") && !$("startTime").value) $("startTime").value=currentTimeHHMM();
