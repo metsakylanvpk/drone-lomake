@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+
 <html lang="fi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VPK UAS beta recovery plus</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VPK UAS beta recovery idfix</title>
 <style>
 :root{
   --bg:#eef2f7;--card:#fff;--line:#d4dce8;--ink:#0f172a;--muted:#667085;
@@ -77,400 +78,370 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 </style>
 </head>
 <body>
-
-<div id="recoverModal" class="recovermodal">
-  <div class="recoverbox">
-    <h3>Keskeneräinen tehtävä löytyi</h3>
-    <div id="recoverText">Selaimeen on tallennettu keskeneräinen tehtävä.</div>
-    <div class="recoveractions">
-      <button type="button" id="recoverContinueBtn">Jatka keskeneräistä</button>
-      <button type="button" id="recoverNewBtn" class="secondary">Aloita uusi tyhjä tehtävä</button>
-      <button type="button" id="recoverClearBtn" class="secondary">Tyhjennä paikallinen keskeneräinen tehtävä</button>
-    </div>
-  </div>
+<div class="recovermodal" id="recoverModal">
+<div class="recoverbox">
+<h3>Keskeneräinen tehtävä löytyi</h3>
+<div id="recoverText">Selaimeen on tallennettu keskeneräinen tehtävä.</div>
+<div class="recoveractions">
+<button id="recoverContinueBtn" type="button">Jatka keskeneräistä</button>
+<button class="secondary" id="recoverNewBtn" type="button">Aloita uusi tyhjä tehtävä</button>
+<button class="secondary" id="recoverClearBtn" type="button">Tyhjennä paikallinen keskeneräinen tehtävä</button>
 </div>
-
-
+</div>
+</div>
 <div class="top">
-  <div class="title">VPK UAS – mobile stable beta recovery+</div>
-  <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
-  <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
-  <button type="button" id="mobileMenuBtn" class="mobilemenubtn">☰ Siirry osioon</button>
-  <div class="nav" id="mainNav">
-    <a href="#checklist">Tarkistuslista</a>
-    <a href="#risk">Riskinarviointi</a>
-    <a href="#plan">Lentosuunnitelma</a>
-    <a href="#log">Päiväkirja</a>
-    <button type="button" id="manualSaveBtn">Tallenna nyt</button>
-  </div>
+<div class="title">VPK UAS – mobile stable beta idfix</div>
+<div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
+<div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
+<button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
+<div class="nav" id="mainNav">
+<a href="#checklist">Tarkistuslista</a>
+<a href="#risk">Riskinarviointi</a>
+<a href="#plan">Lentosuunnitelma</a>
+<a href="#log">Päiväkirja</a>
+<button id="manualSaveBtn" type="button">Tallenna nyt</button>
 </div>
-
+</div>
 <div class="wrap">
-
-<section id="start" class="card">
-  <div class="head start"><h2>Aloita uusi tehtävä</h2></div>
-  <div class="body">
-    <div class="notice">QR-koodi avaa uuden tyhjän tehtävän. Täytä ensin päivämäärä, kellonaika ja paikka. Näistä muodostuu tehtävän nimi, jonka alle kaikki muutokset tallentuvat automaattisesti. GPS haetaan tarvittaessa myöhemmin lentosuunnitelmaosiossa.</div>
-    <div class="grid3">
-      <div class="field"><label>Päivämäärä</label><input type="date" id="startDate"></div>
-      <div class="field"><label>Kellonaika</label><input type="time" id="startTime"></div>
-      <div class="field"><label>Paikka</label><input id="startPlace" placeholder="esim. Klaukkala"></div>
-      <div class="field"><label>Käytettävä drone</label><select id="startAircraft"><option selected>DJI Matrice 4TD</option><option>DJI Mini 3</option></select></div>
-    </div>
-    <div style="margin-top:12px">
-      <button type="button" id="startBtn">Aloita tehtävä</button>
-      <a class="btn secondary" href="#checklist">Jos nappi ei toimi, avaa lomake tästä</a>
-    </div>
-    <div id="startError" class="warn hidden" style="margin-top:12px">Täytä päivämäärä, kellonaika ja paikka ensin.</div>
-  </div>
+<section class="card" id="start">
+<div class="head start"><h2>Aloita uusi tehtävä</h2></div>
+<div class="body">
+<div class="notice">QR-koodi avaa uuden tyhjän tehtävän. Täytä ensin päivämäärä, kellonaika ja paikka. Näistä muodostuu tehtävän nimi, jonka alle kaikki muutokset tallentuvat automaattisesti. GPS haetaan tarvittaessa myöhemmin lentosuunnitelmaosiossa.</div>
+<div class="grid3">
+<div class="field"><label>Päivämäärä</label><input id="startDate" type="date"/></div>
+<div class="field"><label>Kellonaika</label><input id="startTime" type="time"/></div>
+<div class="field"><label>Paikka</label><input id="startPlace" placeholder="esim. Klaukkala"/></div>
+<div class="field"><label>Käytettävä drone</label><select id="startAircraft"><option selected="">DJI Matrice 4TD</option><option>DJI Mini 3</option></select></div>
+</div>
+<div style="margin-top:12px">
+<button id="startBtn" type="button">Aloita tehtävä</button>
+<a class="btn secondary" href="#checklist">Jos nappi ei toimi, avaa lomake tästä</a>
+</div>
+<div class="warn hidden" id="startError" style="margin-top:12px">Täytä päivämäärä, kellonaika ja paikka ensin.</div>
+</div>
 </section>
-
 <section id="appContent">
-
-<section id="checklist" class="card">
-  <div class="head check"><h2>TARKASTUSLISTA – PELASTUSTOIMEN UAS-TOIMINTA</h2></div>
-  <div class="body">
-    <div class="sectiontitle">ENNEN LENNON ALOITTAMISTA:</div>
-    <label class="checkline"><input type="checkbox" id="chkRiskPlan"><span>Kirjallinen riskinarviointi ja lentosuunnitelma (lomakkeen täyttö)</span><span style="margin-left:auto"><a class="btn" href="#risk">Avaa lomake</a></span></label>
-    <label class="checkline"><input type="checkbox"><span>Nousu- ja laskupaikan perustaminen</span></label>
-    <label class="checkline"><input type="checkbox"><span>Lähtö- ja laskeutumisalusta sijoitettu dronen alle</span></label>
-    <div class="sectiontitle" style="margin-top:10px">Ilmoitukset</div>
-    <div class="inlinechecks">
-      <label><input type="checkbox"> Lennonjohto</label><label><input type="checkbox"> AMC</label><label><input type="checkbox"> Puolustusvoimat</label><label><input type="checkbox"> Rajavartiolaitos</label>
-    </div>
-
-    <div class="sectiontitle">OHJAIMEN TARKASTAMINEN:</div>
-    <label class="checkline"><input type="checkbox"><span>Näyttö liitetty ohjaimeen ja tarvittavat kytkennät tehty</span></label>
-    <label class="checkline"><input type="checkbox"><span>Käytettävän ohjelman avaaminen</span></label>
-    <label class="checkline"><input type="checkbox"><span>Käynnistä ohjain</span></label>
-    <label class="checkline"><input type="checkbox"><span>Ohjaimen ja näytön akun varaus riittävä</span></label>
-
-    <div class="sectiontitle">DRONEN TARKASTAMINEN:</div>
-    <label class="checkline"><input type="checkbox"><span>Dronen kunnon silmämääräinen tarkastaminen</span></label>
-    <label class="checkline"><input type="checkbox"><span>Propellien kunto, kiinnitys ja tarvittaessa avaus</span></label>
-    <label class="checkline"><input type="checkbox"><span>Kameran suojuksen/gimbaalin tuen poisto</span></label>
-    <label class="checkline"><input type="checkbox"><span>Dronen virran käynnistäminen, akkujen varauksen tarkistaminen (myös lisäakut)</span></label>
-    <label class="checkline"><input type="checkbox"><span>Muodosta ohjaimella yhteys droneen</span></label>
-    <label class="checkline"><input type="checkbox"><span>Dronen merkkivalojen toiminta</span></label>
-    <label class="checkline"><input type="checkbox"><span>Kameran asetusten valinta</span></label>
-    <label class="checkline"><input type="checkbox"><span>Muistikortti ja tallennustilan riittävyys</span></label>
-
-    <div class="sectiontitle">LENNON ALOITUS:</div>
-    <label class="checkline"><input type="checkbox"><span>Tarkista näytön virheilmoitukset (GPS-signaali, kompassin kalibrointi, ilmatilavaroitukset)</span></label>
-    <label class="checkline"><input type="checkbox"><span>Kalibroi kompassi tarvittaessa</span></label>
-    <label class="checkline"><input type="checkbox"><span>Aseta RTH-paikka ja RTH-korkeus (jos käytettävissä)</span></label>
-    <label class="checkline"><input type="checkbox"><span>Käynnistä roottorit</span></label>
-    <label class="checkline"><input type="checkbox"><span>Nosta drone muutaman metrin korkeuteen ja anna sen leijua paikallaan</span></label>
-    <label class="checkline"><input type="checkbox"><span>Kuuluuko epätavallisia ääniä?</span></label>
-    <label class="checkline"><input type="checkbox"><span>Varmista, että satelliittipaikannus toimii oikein</span></label>
-    <label class="checkline"><input type="checkbox"><span>Tarkasta toimiiko ohjaus normaalisti</span></label>
-    <div class="inlinechecks"><label><input type="radio" name="go"> GO</label><label><input type="radio" name="go"> NO GO</label></div>
-
-    <div class="sectiontitle">LENNON LOPETUS:</div>
-    <label class="checkline"><input type="checkbox"><span>Varmista laskeutumispaikan turvallisuus ja esteettömyys (ei sivullisia)</span></label>
-    <label class="checkline"><input type="checkbox"><span>Käännä kamera vaakatasoon ennen laskeutumista</span></label>
-    <label class="checkline"><input type="checkbox"><span>Laskeudu kohtisuoraan alaspäin merkatulle laskeutumispaikalle</span></label>
-
-    <div class="sectiontitle">LENNON TAI LENTOSARJAN JÄLKEEN:</div>
-    <div class="sectiontitle" style="margin-top:10px">Lopetusilmoitukset</div>
-    <div class="inlinechecks">
-      <label><input type="checkbox"> Lennonjohto</label><label><input type="checkbox"> AMC</label><label><input type="checkbox"> Puolustusvoimat</label><label><input type="checkbox"> Rajavartiolaitos</label>
-    </div>
-    <label class="checkline"><input type="checkbox"><span>Puhdista drone tarvittaessa.</span></label>
-    <label class="checkline"><input type="checkbox"><span>Tarkista propellit ja dronen yleinen kunto.</span></label>
-    <label class="checkline"><input type="checkbox"><span>Määritä huollon ja päivitysten tarve.</span></label>
-    <label class="checkline"><input type="checkbox"><span>Lataa akut lennon jälkeen ja huolehdi toimintakunnosta seuraavaa tehtävää varten.</span></label>
-    <label class="checkline"><input type="checkbox" id="openLogCheck"><span>Kirjaa lennätystapahtuma omaan lennätyspäiväkirjaan OPS M1-35 kriteerien mukaisesti:</span></label>
-    <div style="margin-top:10px">
-      <button type="button" id="openLogBtn" disabled class="secondary" style="opacity:0.5">Avaa lentopäiväkirja</button>
-    </div>
-  </div>
+<section class="card" id="checklist">
+<div class="head check"><h2>TARKASTUSLISTA – PELASTUSTOIMEN UAS-TOIMINTA</h2></div>
+<div class="body">
+<div class="sectiontitle">ENNEN LENNON ALOITTAMISTA:</div>
+<label class="checkline"><input id="chkRiskPlan" type="checkbox"/><span>Kirjallinen riskinarviointi ja lentosuunnitelma (lomakkeen täyttö)</span><span style="margin-left:auto"><a class="btn" href="#risk">Avaa lomake</a></span></label>
+<label class="checkline"><input id="clAuto01" type="checkbox"/><span>Nousu- ja laskupaikan perustaminen</span></label>
+<label class="checkline"><input id="clAuto02" type="checkbox"/><span>Lähtö- ja laskeutumisalusta sijoitettu dronen alle</span></label>
+<div class="sectiontitle" style="margin-top:10px">Ilmoitukset</div>
+<div class="inlinechecks">
+<label><input id="clAuto03" type="checkbox"/> Lennonjohto</label><label><input id="clAuto04" type="checkbox"/> AMC</label><label><input id="clAuto05" type="checkbox"/> Puolustusvoimat</label><label><input id="clAuto06" type="checkbox"/> Rajavartiolaitos</label>
+</div>
+<div class="sectiontitle">OHJAIMEN TARKASTAMINEN:</div>
+<label class="checkline"><input id="clAuto07" type="checkbox"/><span>Näyttö liitetty ohjaimeen ja tarvittavat kytkennät tehty</span></label>
+<label class="checkline"><input id="clAuto08" type="checkbox"/><span>Käytettävän ohjelman avaaminen</span></label>
+<label class="checkline"><input id="clAuto09" type="checkbox"/><span>Käynnistä ohjain</span></label>
+<label class="checkline"><input id="clAuto10" type="checkbox"/><span>Ohjaimen ja näytön akun varaus riittävä</span></label>
+<div class="sectiontitle">DRONEN TARKASTAMINEN:</div>
+<label class="checkline"><input id="clAuto11" type="checkbox"/><span>Dronen kunnon silmämääräinen tarkastaminen</span></label>
+<label class="checkline"><input id="clAuto12" type="checkbox"/><span>Propellien kunto, kiinnitys ja tarvittaessa avaus</span></label>
+<label class="checkline"><input id="clAuto13" type="checkbox"/><span>Kameran suojuksen/gimbaalin tuen poisto</span></label>
+<label class="checkline"><input id="clAuto14" type="checkbox"/><span>Dronen virran käynnistäminen, akkujen varauksen tarkistaminen (myös lisäakut)</span></label>
+<label class="checkline"><input id="clAuto15" type="checkbox"/><span>Muodosta ohjaimella yhteys droneen</span></label>
+<label class="checkline"><input id="clAuto16" type="checkbox"/><span>Dronen merkkivalojen toiminta</span></label>
+<label class="checkline"><input id="clAuto17" type="checkbox"/><span>Kameran asetusten valinta</span></label>
+<label class="checkline"><input id="clAuto18" type="checkbox"/><span>Muistikortti ja tallennustilan riittävyys</span></label>
+<div class="sectiontitle">LENNON ALOITUS:</div>
+<label class="checkline"><input id="clAuto19" type="checkbox"/><span>Tarkista näytön virheilmoitukset (GPS-signaali, kompassin kalibrointi, ilmatilavaroitukset)</span></label>
+<label class="checkline"><input id="clAuto20" type="checkbox"/><span>Kalibroi kompassi tarvittaessa</span></label>
+<label class="checkline"><input id="clAuto21" type="checkbox"/><span>Aseta RTH-paikka ja RTH-korkeus (jos käytettävissä)</span></label>
+<label class="checkline"><input id="clAuto22" type="checkbox"/><span>Käynnistä roottorit</span></label>
+<label class="checkline"><input id="clAuto23" type="checkbox"/><span>Nosta drone muutaman metrin korkeuteen ja anna sen leijua paikallaan</span></label>
+<label class="checkline"><input id="clAuto24" type="checkbox"/><span>Kuuluuko epätavallisia ääniä?</span></label>
+<label class="checkline"><input id="clAuto25" type="checkbox"/><span>Varmista, että satelliittipaikannus toimii oikein</span></label>
+<label class="checkline"><input id="clAuto26" type="checkbox"/><span>Tarkasta toimiiko ohjaus normaalisti</span></label>
+<div class="inlinechecks"><label><input id="goYes" name="go" type="radio"/> GO</label><label><input id="goNo" name="go" type="radio"/> NO GO</label></div>
+<div class="sectiontitle">LENNON LOPETUS:</div>
+<label class="checkline"><input id="clAuto27" type="checkbox"/><span>Varmista laskeutumispaikan turvallisuus ja esteettömyys (ei sivullisia)</span></label>
+<label class="checkline"><input id="clAuto28" type="checkbox"/><span>Käännä kamera vaakatasoon ennen laskeutumista</span></label>
+<label class="checkline"><input id="clAuto29" type="checkbox"/><span>Laskeudu kohtisuoraan alaspäin merkatulle laskeutumispaikalle</span></label>
+<div class="sectiontitle">LENNON TAI LENTOSARJAN JÄLKEEN:</div>
+<div class="sectiontitle" style="margin-top:10px">Lopetusilmoitukset</div>
+<div class="inlinechecks">
+<label><input id="clAuto30" type="checkbox"/> Lennonjohto</label><label><input id="clAuto31" type="checkbox"/> AMC</label><label><input id="clAuto32" type="checkbox"/> Puolustusvoimat</label><label><input id="clAuto33" type="checkbox"/> Rajavartiolaitos</label>
+</div>
+<label class="checkline"><input id="clAuto34" type="checkbox"/><span>Puhdista drone tarvittaessa.</span></label>
+<label class="checkline"><input id="clAuto35" type="checkbox"/><span>Tarkista propellit ja dronen yleinen kunto.</span></label>
+<label class="checkline"><input id="clAuto36" type="checkbox"/><span>Määritä huollon ja päivitysten tarve.</span></label>
+<label class="checkline"><input id="clAuto37" type="checkbox"/><span>Lataa akut lennon jälkeen ja huolehdi toimintakunnosta seuraavaa tehtävää varten.</span></label>
+<label class="checkline"><input id="openLogCheck" type="checkbox"/><span>Kirjaa lennätystapahtuma omaan lennätyspäiväkirjaan OPS M1-35 kriteerien mukaisesti:</span></label>
+<div style="margin-top:10px">
+<button class="secondary" disabled="" id="openLogBtn" style="opacity:0.5" type="button">Avaa lentopäiväkirja</button>
+</div>
+</div>
 </section>
-
-<section id="risk" class="card">
-  <div class="head risk"><h2>Kirjallinen riskinarviointi</h2></div>
-  <div class="body">
-    <div class="grid3">
-      <div class="field"><label>Paikka</label><input id="place" readonly></div>
-      <div class="field"><label>Päivämäärä</label><input id="date" type="date" readonly></div>
-      <div class="field"><label>Kellonaika</label><input id="time" type="time" readonly></div>
-      <div class="field"><label>GPS-sijainti</label><input id="riskGps" readonly placeholder="Ei haettu"></div>
-      <div class="field"><label>Kauko-ohjaaja</label><input id="pilot"></div>
-      <div class="field"><label>Tähystäjä</label><input id="observer"></div>
-      <div class="field"><label>Pel.toim.joht.</label><input id="ptj"></div>
-    </div>
-
-    <div class="sectiontitle">Lentotehtävä</div>
-    <div class="grid2">
-      <div class="field"><label>Lentotehtävä</label><select id="mission"><option>Harjoittelu</option><option>Ihmisen etsintä</option><option>Tiedustelu henkilö</option><option>Tiedustelu rakennuspalo</option><option>Tiedustelu maastopalo</option><option>Tiedustelu liikenneonnettomuus</option><option>Viestintä</option><option>Öljyntorjunta</option><option>Kemiallinen vuoto</option><option>Seuranta</option><option>Joku muu</option></select></div>
-      <div class="field"><label>Joku muu, mikä</label><input id="missionOther"></div>
-      <div class="field"><label>Lentokorkeus (m)</label><input id="altitude" type="number"></div>
-      <div class="field"><label>Toiminta-alue</label><input id="area"></div>
-      <div class="field"><label>Käytettävä ilma-alus</label><select id="aircraft"><option selected>DJI Matrice 4TD</option><option>DJI Mini 3</option></select></div>
-      <div class="field"><label>Viestivälineet ja taajuudet</label><div class="grid2"><input id="virve" placeholder="Virve esim. KUVPK40"><input id="vhf" placeholder="VHF esim. kanava 3"></div></div>
-    </div>
-
-    <div class="sectiontitle">Lentoalueen ennakkotiedustelu</div>
-    <div class="inlinechecks"><label><input type="checkbox" id="aviamaps"> <a href="https://aviamaps.com/" target="_blank" rel="noopener">Aviamaps.com</a></label><label><input type="checkbox" id="ais"> <a href="https://ais.fi/" target="_blank" rel="noopener">AIS.fi (NOTAM)</a></label><label><input type="checkbox" id="weatherproof"> <a href="https://drone.weatherproof.fi/" target="_blank" rel="noopener">Drone.weatherproof.fi</a></label></div>
-    <div class="grid2">
-      <div class="field"><label>Näkö- ja lentoesteet</label><input id="obstacles"></div>
-      <div class="field"><label>Ihmisjoukko</label><input id="crowd"></div>
-      <div class="field"><label>Vesistöt</label><input id="waters"></div>
-      <div class="field"><label>Signaalihäiriöt</label><input id="signal"></div>
-    </div>
-
-    <div class="sectiontitle">Sää lennätyspaikalla</div>
-    <div class="grid2">
-      <div class="field"><label>Lämpötila (°C)</label><input id="temp" type="number"></div>
-      <div class="field"><label>Tuuli (m/s)</label><input id="wind" type="number"></div>
-      <div class="field"><label>Sade/sumu</label><select id="rain"><option>Ei</option><option>Kevyt</option><option>Voimakas</option></select></div>
-      <div class="field"><label>Valoisuus</label><select id="light"><option>Päivä</option><option>Hämärä</option><option>Pimeä</option></select></div>
-    </div>
-
-    <div class="sectiontitle">Keskeiset tunnistetut riskit ovat:</div>
-    <div class="notice">Ei riskiä = 0, Matala = 1, Keski = 3, Korkea = 5. Maksimiriski on 60.</div>
-    <div id="riskRows" class="riskcards">
-      <div class="riskcard">
-        <div class="riskname">1. Tehtävä</div>
-        <div class="riskrow">
-          <select id="riskTehtava" class="riskselect r0">
-            <option value="EI RISKIÄ">EI RISKIÄ</option>
-            <option value="MATALA">MATALA</option>
-            <option value="KESKI">KESKI</option>
-            <option value="KORKEA">KORKEA</option>
-          </select>
-          <div class="score">0</div>
-        </div>
-      </div>
-      <div class="riskcard">
-        <div class="riskname">2. Toiminta-alue</div>
-        <div class="riskrow">
-          <select id="riskToimintaAlue" class="riskselect r0">
-            <option value="EI RISKIÄ">EI RISKIÄ</option>
-            <option value="MATALA">MATALA</option>
-            <option value="KESKI">KESKI</option>
-            <option value="KORKEA">KORKEA</option>
-          </select>
-          <div class="score">0</div>
-        </div>
-      </div>
-      <div class="riskcard">
-        <div class="riskname">3. Fyysiset esteet</div>
-        <div class="riskrow">
-          <select id="riskFyysisetEsteet" class="riskselect r0">
-            <option value="EI RISKIÄ">EI RISKIÄ</option>
-            <option value="MATALA">MATALA</option>
-            <option value="KESKI">KESKI</option>
-            <option value="KORKEA">KORKEA</option>
-          </select>
-          <div class="score">0</div>
-        </div>
-      </div>
-      <div class="riskcard">
-        <div class="riskname">4. Ihmismäärä (väkijoukko)</div>
-        <div class="riskrow">
-          <select id="riskIhmismaara" class="riskselect r0">
-            <option value="EI RISKIÄ">EI RISKIÄ</option>
-            <option value="MATALA">MATALA</option>
-            <option value="KESKI">KESKI</option>
-            <option value="KORKEA">KORKEA</option>
-          </select>
-          <div class="score">0</div>
-        </div>
-      </div>
-      <div class="riskcard">
-        <div class="riskname">5. Signaalihäiriöt</div>
-        <div class="riskrow">
-          <select id="riskSignaalihairiot" class="riskselect r0">
-            <option value="EI RISKIÄ">EI RISKIÄ</option>
-            <option value="MATALA">MATALA</option>
-            <option value="KESKI">KESKI</option>
-            <option value="KORKEA">KORKEA</option>
-          </select>
-          <div class="score">0</div>
-        </div>
-      </div>
-      <div class="riskcard">
-        <div class="riskname">6. Ilmatila (valvottu/valvomaton/UAS)</div>
-        <div class="riskrow">
-          <select id="riskIlmatila" class="riskselect r0">
-            <option value="EI RISKIÄ">EI RISKIÄ</option>
-            <option value="MATALA">MATALA</option>
-            <option value="KESKI">KESKI</option>
-            <option value="KORKEA">KORKEA</option>
-          </select>
-          <div class="score">0</div>
-        </div>
-      </div>
-      <div class="riskcard">
-        <div class="riskname">7. Tuuli, puuskat ja turbulenssi</div>
-        <div class="riskrow">
-          <select id="riskTuuli" class="riskselect r0">
-            <option value="EI RISKIÄ">EI RISKIÄ</option>
-            <option value="MATALA">MATALA</option>
-            <option value="KESKI">KESKI</option>
-            <option value="KORKEA">KORKEA</option>
-          </select>
-          <div class="score">0</div>
-        </div>
-      </div>
-      <div class="riskcard">
-        <div class="riskname">8. Lämpötila</div>
-        <div class="riskrow">
-          <select id="riskLampotila" class="riskselect r0">
-            <option value="EI RISKIÄ">EI RISKIÄ</option>
-            <option value="MATALA">MATALA</option>
-            <option value="KESKI">KESKI</option>
-            <option value="KORKEA">KORKEA</option>
-          </select>
-          <div class="score">0</div>
-        </div>
-      </div>
-      <div class="riskcard">
-        <div class="riskname">9. Jäätäminen / Kosteus</div>
-        <div class="riskrow">
-          <select id="riskJaaminen" class="riskselect r0">
-            <option value="EI RISKIÄ">EI RISKIÄ</option>
-            <option value="MATALA">MATALA</option>
-            <option value="KESKI">KESKI</option>
-            <option value="KORKEA">KORKEA</option>
-          </select>
-          <div class="score">0</div>
-        </div>
-      </div>
-      <div class="riskcard">
-        <div class="riskname">10. Näkyvyys / Valoisuus</div>
-        <div class="riskrow">
-          <select id="riskNakyvyys" class="riskselect r0">
-            <option value="EI RISKIÄ">EI RISKIÄ</option>
-            <option value="MATALA">MATALA</option>
-            <option value="KESKI">KESKI</option>
-            <option value="KORKEA">KORKEA</option>
-          </select>
-          <div class="score">0</div>
-        </div>
-      </div>
-      <div class="riskcard">
-        <div class="riskname">11. Laitteiston soveltuvuus tehtävään</div>
-        <div class="riskrow">
-          <select id="riskLaitteisto" class="riskselect r0">
-            <option value="EI RISKIÄ">EI RISKIÄ</option>
-            <option value="MATALA">MATALA</option>
-            <option value="KESKI">KESKI</option>
-            <option value="KORKEA">KORKEA</option>
-          </select>
-          <div class="score">0</div>
-        </div>
-      </div>
-      <div class="riskcard">
-        <div class="riskname">12. Lentäjän soveltuvuus tehtävään</div>
-        <div class="riskrow">
-          <select id="riskLentaja" class="riskselect r0">
-            <option value="EI RISKIÄ">EI RISKIÄ</option>
-            <option value="MATALA">MATALA</option>
-            <option value="KESKI">KESKI</option>
-            <option value="KORKEA">KORKEA</option>
-          </select>
-          <div class="score">0</div>
-        </div>
-      </div>
-    </div>
-    <div id="riskKpi" class="kpi green"><div class="label">Kokonaisriski tehtävällä</div><div class="value" id="riskTotal">0</div></div>
-
-    <div class="sectiontitle">Kuvaus riskien vähentämisestä</div>
-    <textarea id="riskReduction"></textarea>
-    <div class="grid2">
-      <div class="field"><label>Maksimi lentokorkeus (m)</label><input id="maxAlt" type="number"></div>
-      <div class="field"><label>Minimi lentokorkeus (m)</label><input id="minAlt" type="number"></div>
-    </div>
-
-    <div class="sectiontitle">Toiminta häiriötilanteessa</div>
-    <textarea id="emergency"></textarea>
-    <div class="sectiontitle">Ilmoitukset</div>
-    <div class="inlinechecks"><label><input type="checkbox" id="riskIlmoitusLennonjohto"> Lennonjohto / ATC p.</label><label><input type="checkbox" id="riskIlmoitusAMC"> AMC p. 03-3869851</label><label><input type="checkbox" id="riskIlmoitusPV"> PV p.</label><label><input type="checkbox" id="riskIlmoitusMuu"> Muu</label></div>
-    <div class="sectiontitle">Riskiarvion mukainen päätös PTJ:ltä (go / no-go)</div>
-    <select id="ptjDecision"><option>GO</option><option>NO-GO</option></select>
-    <div class="sectiontitle">Muuta / muistiinpanoja</div>
-    <textarea id="riskNotes"></textarea>
-  </div>
+<section class="card" id="risk">
+<div class="head risk"><h2>Kirjallinen riskinarviointi</h2></div>
+<div class="body">
+<div class="grid3">
+<div class="field"><label>Paikka</label><input id="place" readonly=""/></div>
+<div class="field"><label>Päivämäärä</label><input id="date" readonly="" type="date"/></div>
+<div class="field"><label>Kellonaika</label><input id="time" readonly="" type="time"/></div>
+<div class="field"><label>GPS-sijainti</label><input id="riskGps" placeholder="Ei haettu" readonly=""/></div>
+<div class="field"><label>Kauko-ohjaaja</label><input id="pilot"/></div>
+<div class="field"><label>Tähystäjä</label><input id="observer"/></div>
+<div class="field"><label>Pel.toim.joht.</label><input id="ptj"/></div>
+</div>
+<div class="sectiontitle">Lentotehtävä</div>
+<div class="grid2">
+<div class="field"><label>Lentotehtävä</label><select id="mission"><option>Harjoittelu</option><option>Ihmisen etsintä</option><option>Tiedustelu henkilö</option><option>Tiedustelu rakennuspalo</option><option>Tiedustelu maastopalo</option><option>Tiedustelu liikenneonnettomuus</option><option>Viestintä</option><option>Öljyntorjunta</option><option>Kemiallinen vuoto</option><option>Seuranta</option><option>Joku muu</option></select></div>
+<div class="field"><label>Joku muu, mikä</label><input id="missionOther"/></div>
+<div class="field"><label>Lentokorkeus (m)</label><input id="altitude" type="number"/></div>
+<div class="field"><label>Toiminta-alue</label><input id="area"/></div>
+<div class="field"><label>Käytettävä ilma-alus</label><select id="aircraft"><option selected="">DJI Matrice 4TD</option><option>DJI Mini 3</option></select></div>
+<div class="field"><label>Viestivälineet ja taajuudet</label><div class="grid2"><input id="virve" placeholder="Virve esim. KUVPK40"/><input id="vhf" placeholder="VHF esim. kanava 3"/></div></div>
+</div>
+<div class="sectiontitle">Lentoalueen ennakkotiedustelu</div>
+<div class="inlinechecks"><label><input id="aviamaps" type="checkbox"/> <a href="https://aviamaps.com/" rel="noopener" target="_blank">Aviamaps.com</a></label><label><input id="ais" type="checkbox"/> <a href="https://ais.fi/" rel="noopener" target="_blank">AIS.fi (NOTAM)</a></label><label><input id="weatherproof" type="checkbox"/> <a href="https://drone.weatherproof.fi/" rel="noopener" target="_blank">Drone.weatherproof.fi</a></label></div>
+<div class="grid2">
+<div class="field"><label>Näkö- ja lentoesteet</label><input id="obstacles"/></div>
+<div class="field"><label>Ihmisjoukko</label><input id="crowd"/></div>
+<div class="field"><label>Vesistöt</label><input id="waters"/></div>
+<div class="field"><label>Signaalihäiriöt</label><input id="signal"/></div>
+</div>
+<div class="sectiontitle">Sää lennätyspaikalla</div>
+<div class="grid2">
+<div class="field"><label>Lämpötila (°C)</label><input id="temp" type="number"/></div>
+<div class="field"><label>Tuuli (m/s)</label><input id="wind" type="number"/></div>
+<div class="field"><label>Sade/sumu</label><select id="rain"><option>Ei</option><option>Kevyt</option><option>Voimakas</option></select></div>
+<div class="field"><label>Valoisuus</label><select id="light"><option>Päivä</option><option>Hämärä</option><option>Pimeä</option></select></div>
+</div>
+<div class="sectiontitle">Keskeiset tunnistetut riskit ovat:</div>
+<div class="notice">Ei riskiä = 0, Matala = 1, Keski = 3, Korkea = 5. Maksimiriski on 60.</div>
+<div class="riskcards" id="riskRows">
+<div class="riskcard">
+<div class="riskname">1. Tehtävä</div>
+<div class="riskrow">
+<select class="riskselect r0" id="riskTehtava">
+<option value="EI RISKIÄ">EI RISKIÄ</option>
+<option value="MATALA">MATALA</option>
+<option value="KESKI">KESKI</option>
+<option value="KORKEA">KORKEA</option>
+</select>
+<div class="score">0</div>
+</div>
+</div>
+<div class="riskcard">
+<div class="riskname">2. Toiminta-alue</div>
+<div class="riskrow">
+<select class="riskselect r0" id="riskToimintaAlue">
+<option value="EI RISKIÄ">EI RISKIÄ</option>
+<option value="MATALA">MATALA</option>
+<option value="KESKI">KESKI</option>
+<option value="KORKEA">KORKEA</option>
+</select>
+<div class="score">0</div>
+</div>
+</div>
+<div class="riskcard">
+<div class="riskname">3. Fyysiset esteet</div>
+<div class="riskrow">
+<select class="riskselect r0" id="riskFyysisetEsteet">
+<option value="EI RISKIÄ">EI RISKIÄ</option>
+<option value="MATALA">MATALA</option>
+<option value="KESKI">KESKI</option>
+<option value="KORKEA">KORKEA</option>
+</select>
+<div class="score">0</div>
+</div>
+</div>
+<div class="riskcard">
+<div class="riskname">4. Ihmismäärä (väkijoukko)</div>
+<div class="riskrow">
+<select class="riskselect r0" id="riskIhmismaara">
+<option value="EI RISKIÄ">EI RISKIÄ</option>
+<option value="MATALA">MATALA</option>
+<option value="KESKI">KESKI</option>
+<option value="KORKEA">KORKEA</option>
+</select>
+<div class="score">0</div>
+</div>
+</div>
+<div class="riskcard">
+<div class="riskname">5. Signaalihäiriöt</div>
+<div class="riskrow">
+<select class="riskselect r0" id="riskSignaalihairiot">
+<option value="EI RISKIÄ">EI RISKIÄ</option>
+<option value="MATALA">MATALA</option>
+<option value="KESKI">KESKI</option>
+<option value="KORKEA">KORKEA</option>
+</select>
+<div class="score">0</div>
+</div>
+</div>
+<div class="riskcard">
+<div class="riskname">6. Ilmatila (valvottu/valvomaton/UAS)</div>
+<div class="riskrow">
+<select class="riskselect r0" id="riskIlmatila">
+<option value="EI RISKIÄ">EI RISKIÄ</option>
+<option value="MATALA">MATALA</option>
+<option value="KESKI">KESKI</option>
+<option value="KORKEA">KORKEA</option>
+</select>
+<div class="score">0</div>
+</div>
+</div>
+<div class="riskcard">
+<div class="riskname">7. Tuuli, puuskat ja turbulenssi</div>
+<div class="riskrow">
+<select class="riskselect r0" id="riskTuuli">
+<option value="EI RISKIÄ">EI RISKIÄ</option>
+<option value="MATALA">MATALA</option>
+<option value="KESKI">KESKI</option>
+<option value="KORKEA">KORKEA</option>
+</select>
+<div class="score">0</div>
+</div>
+</div>
+<div class="riskcard">
+<div class="riskname">8. Lämpötila</div>
+<div class="riskrow">
+<select class="riskselect r0" id="riskLampotila">
+<option value="EI RISKIÄ">EI RISKIÄ</option>
+<option value="MATALA">MATALA</option>
+<option value="KESKI">KESKI</option>
+<option value="KORKEA">KORKEA</option>
+</select>
+<div class="score">0</div>
+</div>
+</div>
+<div class="riskcard">
+<div class="riskname">9. Jäätäminen / Kosteus</div>
+<div class="riskrow">
+<select class="riskselect r0" id="riskJaaminen">
+<option value="EI RISKIÄ">EI RISKIÄ</option>
+<option value="MATALA">MATALA</option>
+<option value="KESKI">KESKI</option>
+<option value="KORKEA">KORKEA</option>
+</select>
+<div class="score">0</div>
+</div>
+</div>
+<div class="riskcard">
+<div class="riskname">10. Näkyvyys / Valoisuus</div>
+<div class="riskrow">
+<select class="riskselect r0" id="riskNakyvyys">
+<option value="EI RISKIÄ">EI RISKIÄ</option>
+<option value="MATALA">MATALA</option>
+<option value="KESKI">KESKI</option>
+<option value="KORKEA">KORKEA</option>
+</select>
+<div class="score">0</div>
+</div>
+</div>
+<div class="riskcard">
+<div class="riskname">11. Laitteiston soveltuvuus tehtävään</div>
+<div class="riskrow">
+<select class="riskselect r0" id="riskLaitteisto">
+<option value="EI RISKIÄ">EI RISKIÄ</option>
+<option value="MATALA">MATALA</option>
+<option value="KESKI">KESKI</option>
+<option value="KORKEA">KORKEA</option>
+</select>
+<div class="score">0</div>
+</div>
+</div>
+<div class="riskcard">
+<div class="riskname">12. Lentäjän soveltuvuus tehtävään</div>
+<div class="riskrow">
+<select class="riskselect r0" id="riskLentaja">
+<option value="EI RISKIÄ">EI RISKIÄ</option>
+<option value="MATALA">MATALA</option>
+<option value="KESKI">KESKI</option>
+<option value="KORKEA">KORKEA</option>
+</select>
+<div class="score">0</div>
+</div>
+</div>
+</div>
+<div class="kpi green" id="riskKpi"><div class="label">Kokonaisriski tehtävällä</div><div class="value" id="riskTotal">0</div></div>
+<div class="sectiontitle">Kuvaus riskien vähentämisestä</div>
+<textarea id="riskReduction"></textarea>
+<div class="grid2">
+<div class="field"><label>Maksimi lentokorkeus (m)</label><input id="maxAlt" type="number"/></div>
+<div class="field"><label>Minimi lentokorkeus (m)</label><input id="minAlt" type="number"/></div>
+</div>
+<div class="sectiontitle">Toiminta häiriötilanteessa</div>
+<textarea id="emergency"></textarea>
+<div class="sectiontitle">Ilmoitukset</div>
+<div class="inlinechecks"><label><input id="riskIlmoitusLennonjohto" type="checkbox"/> Lennonjohto / ATC p.</label><label><input id="riskIlmoitusAMC" type="checkbox"/> AMC p. 03-3869851</label><label><input id="riskIlmoitusPV" type="checkbox"/> PV p.</label><label><input id="riskIlmoitusMuu" type="checkbox"/> Muu</label></div>
+<div class="sectiontitle">Riskiarvion mukainen päätös PTJ:ltä (go / no-go)</div>
+<select id="ptjDecision"><option>GO</option><option>NO-GO</option></select>
+<div class="sectiontitle">Muuta / muistiinpanoja</div>
+<textarea id="riskNotes"></textarea>
+</div>
 </section>
-
-<section id="plan" class="card">
-  <div class="head plan"><h2>Kirjallinen lentosuunnitelma</h2></div>
-  <div class="body">
-    <div class="notice">Samat perustiedot tulevat riskinarvioinnista/automaattisesta aloituksesta. GPS näkyy mukana, jos se on haettu tehtäväpaikalla.</div>
-    <div class="summary" id="planAutofill"></div>
-
-    <div class="sectiontitle">Lentosuunnitelma (valitse ainakin perusoperaatiomalli)</div>
-    <div class="field"><label>Valitse</label><select id="operationModel"><option>Ensitiedustelu</option><option>Kohdetiedustelu</option><option>Seuranta</option></select></div>
-    <div class="field"><label>Vapaa teksti</label><textarea id="planFreeText"></textarea></div>
-
-    <div class="sectiontitle">Lentokorkeudet</div>
-    <div class="summary"><div><strong>Maksimi lentokorkeus:</strong> <span id="planMaxAlt">-</span></div><div><strong>Minimi lentokorkeus:</strong> <span id="planMinAlt">-</span></div></div>
-
-    <div class="sectiontitle">Lennätyspaikka ja varalaskupaikat</div>
-    <div class="notice">GPS haetaan vasta tehtäväpaikalla. Kun painat “Hae GPS-sijainti”, sama sijainti täyttyy lähtö- ja laskupaikan lisätiedoksi sekä lentopäiväkirjaan.</div>
-    <div style="margin-bottom:10px">
-      <button type="button" id="gpsBtn">Hae GPS-sijainti</button>
-      <span id="gpsStatus" class="subtle" style="margin-left:8px"></span>
-    </div>
-    <div class="grid2">
-      <div class="field"><label>Lähtöpaikka</label><input id="startPlace2"></div>
-      <div class="field"><label>Laskupaikka</label><input id="landingPlace"></div>
-      <div class="field"><label>Lähtöpaikan GPS</label><input id="planStartGps" readonly placeholder="Ei haettu"></div>
-      <div class="field"><label>Laskupaikan GPS</label><input id="planLandingGps" readonly placeholder="Ei haettu"></div>
-      <div class="field"><label>VARA1</label><input id="vara1"></div>
-      <div class="field"><label>HÄTÄ1</label><input id="hata1"></div>
-      <div class="field"><label>VARA2</label><input id="vara2"></div>
-      <div class="field"><label>HÄTÄ2</label><input id="hata2"></div>
-    </div>
-
-    <div class="sectiontitle">Kellonajat</div>
-    <div class="grid2"><div class="field"><label>TOIMINNAN ALKAMINEN</label><input type="time" id="operationStart"></div><div class="field"><label>TOIMINNAN PÄÄTTYMINEN</label><input type="time" id="operationEnd"></div></div>
-    <table class="timeTable"><thead><tr><th></th><th>YLÖS</th><th>ALAS</th></tr></thead><tbody>
-      <tr><td>1.</td><td><input type="time" class="upTime"></td><td><input type="time" class="downTime"></td></tr>
-      <tr><td>2.</td><td><input type="time" class="upTime"></td><td><input type="time" class="downTime"></td></tr>
-      <tr><td>3.</td><td><input type="time" class="upTime"></td><td><input type="time" class="downTime"></td></tr>
-      <tr><td>4.</td><td><input type="time" class="upTime"></td><td><input type="time" class="downTime"></td></tr>
-    </tbody></table>
-    <div class="field"><label>LENTOMINUUTIT YHTEENSÄ</label><input id="flightMinutes" readonly placeholder="Lasketaan ajoista"></div>
-
-    <div class="sectiontitle">MUUTA / MUISTIINPANOJA</div>
-    <textarea id="planNotes"></textarea>
-
-    <div style="margin-top:14px"><button type="button" id="doneBtn">Merkitse valmis ja palaa tarkistuslistaan</button></div>
-    <div id="savedInfo" class="saved">Tallennettu testinä selaimeen.</div>
-  </div>
+<section class="card" id="plan">
+<div class="head plan"><h2>Kirjallinen lentosuunnitelma</h2></div>
+<div class="body">
+<div class="notice">Samat perustiedot tulevat riskinarvioinnista/automaattisesta aloituksesta. GPS näkyy mukana, jos se on haettu tehtäväpaikalla.</div>
+<div class="summary" id="planAutofill"></div>
+<div class="sectiontitle">Lentosuunnitelma (valitse ainakin perusoperaatiomalli)</div>
+<div class="field"><label>Valitse</label><select id="operationModel"><option>Ensitiedustelu</option><option>Kohdetiedustelu</option><option>Seuranta</option></select></div>
+<div class="field"><label>Vapaa teksti</label><textarea id="planFreeText"></textarea></div>
+<div class="sectiontitle">Lentokorkeudet</div>
+<div class="summary"><div><strong>Maksimi lentokorkeus:</strong> <span id="planMaxAlt">-</span></div><div><strong>Minimi lentokorkeus:</strong> <span id="planMinAlt">-</span></div></div>
+<div class="sectiontitle">Lennätyspaikka ja varalaskupaikat</div>
+<div class="notice">GPS haetaan vasta tehtäväpaikalla. Kun painat “Hae GPS-sijainti”, sama sijainti täyttyy lähtö- ja laskupaikan lisätiedoksi sekä lentopäiväkirjaan.</div>
+<div style="margin-bottom:10px">
+<button id="gpsBtn" type="button">Hae GPS-sijainti</button>
+<span class="subtle" id="gpsStatus" style="margin-left:8px"></span>
+</div>
+<div class="grid2">
+<div class="field"><label>Lähtöpaikka</label><input id="startPlace2"/></div>
+<div class="field"><label>Laskupaikka</label><input id="landingPlace"/></div>
+<div class="field"><label>Lähtöpaikan GPS</label><input id="planStartGps" placeholder="Ei haettu" readonly=""/></div>
+<div class="field"><label>Laskupaikan GPS</label><input id="planLandingGps" placeholder="Ei haettu" readonly=""/></div>
+<div class="field"><label>VARA1</label><input id="vara1"/></div>
+<div class="field"><label>HÄTÄ1</label><input id="hata1"/></div>
+<div class="field"><label>VARA2</label><input id="vara2"/></div>
+<div class="field"><label>HÄTÄ2</label><input id="hata2"/></div>
+</div>
+<div class="sectiontitle">Kellonajat</div>
+<div class="grid2"><div class="field"><label>TOIMINNAN ALKAMINEN</label><input id="operationStart" type="time"/></div><div class="field"><label>TOIMINNAN PÄÄTTYMINEN</label><input id="operationEnd" type="time"/></div></div>
+<table class="timeTable"><thead><tr><th></th><th>YLÖS</th><th>ALAS</th></tr></thead><tbody>
+<tr><td>1.</td><td><input class="upTime" id="up1" type="time"/></td><td><input class="downTime" id="down1" type="time"/></td></tr>
+<tr><td>2.</td><td><input class="upTime" id="up2" type="time"/></td><td><input class="downTime" id="down2" type="time"/></td></tr>
+<tr><td>3.</td><td><input class="upTime" id="up3" type="time"/></td><td><input class="downTime" id="down3" type="time"/></td></tr>
+<tr><td>4.</td><td><input class="upTime" id="up4" type="time"/></td><td><input class="downTime" id="down4" type="time"/></td></tr>
+</tbody></table>
+<div class="field"><label>LENTOMINUUTIT YHTEENSÄ</label><input id="flightMinutes" placeholder="Lasketaan ajoista" readonly=""/></div>
+<div class="sectiontitle">MUUTA / MUISTIINPANOJA</div>
+<textarea id="planNotes"></textarea>
+<div style="margin-top:14px"><button id="doneBtn" type="button">Merkitse valmis ja palaa tarkistuslistaan</button></div>
+<div class="saved" id="savedInfo">Tallennettu testinä selaimeen.</div>
+</div>
 </section>
-
-<section id="log" class="card">
-  <div class="head log"><h2>Lentopäiväkirjatiedot / Pronto</h2></div>
-  <div class="body">
-    <div class="grid2">
-      <div class="field"><label>Lennon päivämäärä</label><input type="date" id="logDate"></div>
-      <div class="field"><label>Lennon lähtö- ja laskupaikka</label><input id="logPlace"></div>
-      <div class="field"><label>Lennon lähtö- ja laskupaikan GPS</label><input id="logGps" readonly placeholder="Ei haettu"></div>
-      <div class="field"><label>Ilma-aluksen päällikkö</label><input id="logCaptain"></div>
-      <div class="field"><label>Ilma-aluksen tai ilma-alusjärjestelmän valmistaja ja malli</label><input id="logAircraft"></div>
-      <div class="field"><label>Alkamisaika</label><input type="time" id="logStart"></div>
-      <div class="field"><label>Päättymisaika</label><input type="time" id="logEnd"></div>
-    </div>
-    <div class="inlinechecks"><label><input type="checkbox" id="logVLOS"> VLOS – näköyhteydessä lennättäminen</label><label><input type="checkbox" id="logEVLOS"> EVLOS – laajennettu näköyhteys tähystäjän avulla</label><label><input type="checkbox" id="logBVLOS"> BVLOS – näköyhteyden ulkopuolella lennättäminen</label></div>
-    <div class="grid2"><div class="field"><label>Maksimilentokorkeus</label><input type="number" id="logMaxAlt"></div><div class="field"><label>Lennetty lähempänä kuin 50 metrin etäisyydellä ihmisjoukosta</label><input id="logNearCrowd"></div><div class="field"><label>Lentotehtävän luonne</label><input id="logMissionNature" readonly></div></div>
-    <div class="field"><label>Muut lennolla sattuneet erityiset tapahtumat</label><textarea id="logEvents"></textarea></div>
-
-    <div class="sectiontitle">Tehtävän päättäminen</div>
-    <div class="notice">Päätä tehtävä, kun tiedot ovat valmiit. Jos lentoa ei tehdä tai tehtävä keskeytyy, voit merkitä tehtävän keskeytetyksi ilman lisäselityksiä.</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
-      <button type="button" id="finishTaskBtn">Päätä tehtävä ja tallenna lopullisesti</button>
-      <button type="button" id="cancelTaskBtn" class="secondary">Keskeytä tehtävä ja tallenna lopullisesti</button>
-    </div>
-  </div>
+<section class="card" id="log">
+<div class="head log"><h2>Lentopäiväkirjatiedot / Pronto</h2></div>
+<div class="body">
+<div class="grid2">
+<div class="field"><label>Lennon päivämäärä</label><input id="logDate" type="date"/></div>
+<div class="field"><label>Lennon lähtö- ja laskupaikka</label><input id="logPlace"/></div>
+<div class="field"><label>Lennon lähtö- ja laskupaikan GPS</label><input id="logGps" placeholder="Ei haettu" readonly=""/></div>
+<div class="field"><label>Ilma-aluksen päällikkö</label><input id="logCaptain"/></div>
+<div class="field"><label>Ilma-aluksen tai ilma-alusjärjestelmän valmistaja ja malli</label><input id="logAircraft"/></div>
+<div class="field"><label>Alkamisaika</label><input id="logStart" type="time"/></div>
+<div class="field"><label>Päättymisaika</label><input id="logEnd" type="time"/></div>
+</div>
+<div class="inlinechecks"><label><input id="logVLOS" type="checkbox"/> VLOS – näköyhteydessä lennättäminen</label><label><input id="logEVLOS" type="checkbox"/> EVLOS – laajennettu näköyhteys tähystäjän avulla</label><label><input id="logBVLOS" type="checkbox"/> BVLOS – näköyhteyden ulkopuolella lennättäminen</label></div>
+<div class="grid2"><div class="field"><label>Maksimilentokorkeus</label><input id="logMaxAlt" type="number"/></div><div class="field"><label>Lennetty lähempänä kuin 50 metrin etäisyydellä ihmisjoukosta</label><input id="logNearCrowd"/></div><div class="field"><label>Lentotehtävän luonne</label><input id="logMissionNature" readonly=""/></div></div>
+<div class="field"><label>Muut lennolla sattuneet erityiset tapahtumat</label><textarea id="logEvents"></textarea></div>
+<div class="sectiontitle">Tehtävän päättäminen</div>
+<div class="notice">Päätä tehtävä, kun tiedot ovat valmiit. Jos lentoa ei tehdä tai tehtävä keskeytyy, voit merkitä tehtävän keskeytetyksi ilman lisäselityksiä.</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+<button id="finishTaskBtn" type="button">Päätä tehtävä ja tallenna lopullisesti</button>
+<button class="secondary" id="cancelTaskBtn" type="button">Keskeytä tehtävä ja tallenna lopullisesti</button>
+</div>
+</div>
 </section>
-
 </section>
 </div>
-
 <script>
 (function(){
 const riskNames=["1. Tehtävä","2. Toiminta-alue","3. Fyysiset esteet","4. Ihmismäärä (väkijoukko)","5. Signaalihäiriöt","6. Ilmatila (valvottu/valvomaton/UAS)","7. Tuuli, puuskat ja turbulenssi","8. Lämpötila","9. Jäätäminen / Kosteus","10. Näkyvyys / Valoisuus","11. Laitteiston soveltuvuus tehtävään","12. Lentäjän soveltuvuus tehtävään"];
@@ -558,21 +529,7 @@ function sync(){
  $("logMissionNature").value=val("mission")+(val("missionOther")?"/ "+val("missionOther"):"");
 }
 function collect(){
- const fields = [...document.querySelectorAll("input,select,textarea")].map((e,index)=>({
-   index:index,
-   id:e.id || "",
-   name:e.name || "",
-   tag:e.tagName || "",
-   type:e.type || "",
-   className:e.className || "",
-   value:(e.type==="checkbox"||e.type==="radio") ? e.checked : e.value
- }));
-
- return {
-   name:taskName(),
-   savedAt:new Date().toISOString(),
-   fields:fields
- };
+ return {name:taskName(), savedAt:new Date().toISOString(), fields:[...document.querySelectorAll("input,select,textarea")].map(e=>({id:e.id,type:e.type,value:(e.type==="checkbox"||e.type==="radio")?e.checked:e.value}))};
 }
 function autosave(){
  try{
@@ -948,23 +905,14 @@ function saveLastTaskKey(){
 
 function restoreTask(data){
  if(!data || !data.fields) return;
-
- const allFields = [...document.querySelectorAll("input,select,textarea")];
+ if(data.name) currentTaskName = data.name;
 
  data.fields.forEach(f=>{
-   let el = null;
-
-   if(f.id){
-     el = document.getElementById(f.id);
-   }
-
-   if(!el && typeof f.index === "number"){
-     el = allFields[f.index];
-   }
-
+   if(!f.id) return;
+   const el = document.getElementById(f.id);
    if(!el) return;
 
-   if(f.type === "checkbox" || f.type === "radio" || el.type === "checkbox" || el.type === "radio"){
+   if(f.type === "checkbox" || f.type === "radio"){
      el.checked = !!f.value;
    }else{
      el.value = f.value || "";
@@ -1003,6 +951,46 @@ function restoreTask(data){
  sync();
  updateName();
  autosave();
+}
+
+
+function findLatestRecoverableTask(){
+ let best = null;
+
+ try{
+   const lastKey = localStorage.getItem("vpk_uas_last_task");
+   if(lastKey){
+     const raw = localStorage.getItem(lastKey);
+     if(raw){
+       const data = JSON.parse(raw);
+       if(data && data.name && data.name.indexOf("_Paikka_") === -1 && !data.name.endsWith("_Paikka")){
+         best = {key:lastKey, data:data};
+       }
+     }
+   }
+
+   for(let i=0;i<localStorage.length;i++){
+     const key = localStorage.key(i);
+     if(!key || !key.startsWith("vpk_uas_") || key === "vpk_uas_last_task") continue;
+
+     const raw = localStorage.getItem(key);
+     if(!raw) continue;
+
+     let data = null;
+     try{ data = JSON.parse(raw); }catch(e){ continue; }
+     if(!data || !data.name || !data.fields) continue;
+     if(data.name.indexOf("_Paikka_") !== -1 || data.name.endsWith("_Paikka")) continue;
+
+     const saved = data.savedAt ? Date.parse(data.savedAt) : 0;
+     const bestSaved = best && best.data && best.data.savedAt ? Date.parse(best.data.savedAt) : -1;
+
+     if(!best || saved > bestSaved){
+       best = {key:key, data:data};
+     }
+   }
+ }catch(e){}
+
+ return best;
 }
 
 function checkRecovery(){
