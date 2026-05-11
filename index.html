@@ -85,6 +85,7 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
     <div class="recoveractions">
       <button type="button" id="recoverContinueBtn">Jatka keskeneräistä</button>
       <button type="button" id="recoverNewBtn" class="secondary">Aloita uusi tyhjä tehtävä</button>
+      <button type="button" id="recoverClearBtn" class="secondary">Tyhjennä paikallinen keskeneräinen tehtävä</button>
     </div>
   </div>
 </div>
@@ -1054,6 +1055,26 @@ function checkRecovery(){
        }catch(e){}
        if(modal) modal.style.display = "none";
        setSaveStatus("Aloitetaan uusi tyhjä tehtävä", "wait");
+     });
+   }
+
+
+   const clearBtn = $("recoverClearBtn");
+   if(clearBtn){
+     clearBtn.addEventListener("click", ()=>{
+       try{
+         for(let i=localStorage.length-1;i>=0;i--){
+           const key = localStorage.key(i);
+           if(key && key.startsWith("vpk_uas_")){
+             localStorage.removeItem(key);
+           }
+         }
+         localStorage.removeItem("vpk_uas_last_task");
+         currentTaskName = "";
+       }catch(e){}
+
+       if(modal) modal.style.display = "none";
+       setSaveStatus("Paikalliset keskeneräiset tehtävät poistettu", "ok");
      });
    }
 
