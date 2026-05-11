@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VPK UAS testiversio v9</title>
+<title>VPK UAS beta recovery plus</title>
 <style>
 :root{
   --bg:#eef2f7;--card:#fff;--line:#d4dce8;--ink:#0f172a;--muted:#667085;
@@ -92,7 +92,7 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 
 
 <div class="top">
-  <div class="title">VPK UAS – mobile stable beta</div>
+  <div class="title">VPK UAS – mobile stable beta recovery+</div>
   <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
   <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
   <button type="button" id="mobileMenuBtn" class="mobilemenubtn">☰ Siirry osioon</button>
@@ -558,7 +558,21 @@ function sync(){
  $("logMissionNature").value=val("mission")+(val("missionOther")?"/ "+val("missionOther"):"");
 }
 function collect(){
- return {name:taskName(), savedAt:new Date().toISOString(), fields:[...document.querySelectorAll("input,select,textarea")].map(e=>({id:e.id,type:e.type,value:(e.type==="checkbox"||e.type==="radio")?e.checked:e.value}))};
+ const fields = [...document.querySelectorAll("input,select,textarea")].map((e,index)=>({
+   index:index,
+   id:e.id || "",
+   name:e.name || "",
+   tag:e.tagName || "",
+   type:e.type || "",
+   className:e.className || "",
+   value:(e.type==="checkbox"||e.type==="radio") ? e.checked : e.value
+ }));
+
+ return {
+   name:taskName(),
+   savedAt:new Date().toISOString(),
+   fields:fields
+ };
 }
 function autosave(){
  try{
@@ -934,14 +948,23 @@ function saveLastTaskKey(){
 
 function restoreTask(data){
  if(!data || !data.fields) return;
- if(data.name) currentTaskName = data.name;
+
+ const allFields = [...document.querySelectorAll("input,select,textarea")];
 
  data.fields.forEach(f=>{
-   if(!f.id) return;
-   const el = document.getElementById(f.id);
+   let el = null;
+
+   if(f.id){
+     el = document.getElementById(f.id);
+   }
+
+   if(!el && typeof f.index === "number"){
+     el = allFields[f.index];
+   }
+
    if(!el) return;
 
-   if(f.type === "checkbox" || f.type === "radio"){
+   if(f.type === "checkbox" || f.type === "radio" || el.type === "checkbox" || el.type === "radio"){
      el.checked = !!f.value;
    }else{
      el.value = f.value || "";
@@ -980,46 +1003,6 @@ function restoreTask(data){
  sync();
  updateName();
  autosave();
-}
-
-
-function findLatestRecoverableTask(){
- let best = null;
-
- try{
-   const lastKey = localStorage.getItem("vpk_uas_last_task");
-   if(lastKey){
-     const raw = localStorage.getItem(lastKey);
-     if(raw){
-       const data = JSON.parse(raw);
-       if(data && data.name && data.name.indexOf("_Paikka_") === -1 && !data.name.endsWith("_Paikka")){
-         best = {key:lastKey, data:data};
-       }
-     }
-   }
-
-   for(let i=0;i<localStorage.length;i++){
-     const key = localStorage.key(i);
-     if(!key || !key.startsWith("vpk_uas_") || key === "vpk_uas_last_task") continue;
-
-     const raw = localStorage.getItem(key);
-     if(!raw) continue;
-
-     let data = null;
-     try{ data = JSON.parse(raw); }catch(e){ continue; }
-     if(!data || !data.name || !data.fields) continue;
-     if(data.name.indexOf("_Paikka_") !== -1 || data.name.endsWith("_Paikka")) continue;
-
-     const saved = data.savedAt ? Date.parse(data.savedAt) : 0;
-     const bestSaved = best && best.data && best.data.savedAt ? Date.parse(best.data.savedAt) : -1;
-
-     if(!best || saved > bestSaved){
-       best = {key:key, data:data};
-     }
-   }
- }catch(e){}
-
- return best;
 }
 
 function checkRecovery(){
