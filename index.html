@@ -181,7 +181,7 @@ section.card{scroll-margin-top:125px}
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta hallinta reopen3-2 final-lock</div>
+<div class="title">VPK UAS – beta hallinta edit3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -1576,7 +1576,7 @@ async function loadTasks(){
          </div>
          <div class="taskactions">
            <button type="button" onclick="openReportForTask('${escHtml(name)}')">Avaa raportti</button>
-           <button type="button" class="secondary" onclick="reopenTask('${escHtml(name)}')">Avaa tehtävä uudelleen</button>
+           <button type="button" class="secondary" onclick="reopenTask('${escHtml(name)}')">Avaa muokattavaksi</button>
            <button type="button" class="secondary" onclick="deleteTask('${escHtml(name)}')">Poista tehtävä</button>
          </div>
        </div>`;
@@ -1683,18 +1683,211 @@ function setupNameSuggestions(){
   ["change","blur"].forEach(ev=>el.addEventListener(ev,()=>{storeName(key,el.value);fillNameDatalist(dl,key);}));
  });
 }
+
+function setVal(id, value){
+ const el = $(id);
+ if(!el) return;
+ el.value = value == null ? "" : value;
+}
+
+function setChk(id, value){
+ const el = $(id);
+ if(!el) return;
+ el.checked = boolValue(value);
+}
+
+function loadReportToForm(report){
+ if(!report) return;
+
+ const t = report.Tehtavat || {};
+ const c = report.Tarkistuslista || {};
+ const r = report.Riskinarviointi || {};
+ const p = report.Lentosuunnitelma || {};
+ const l = report.Lentopaivakirja || {};
+
+ currentTaskName = t.TehtavaNimi || r.TehtavaNimi || p.TehtavaNimi || l.TehtavaNimi || "";
+ currentTaskStatus = "Kesken";
+ taskClosing = false;
+
+ // Aloitus ja perustiedot
+ setVal("startDate", t.Paivamaara || r.Paivamaara || p.Paivamaara || "");
+ setVal("startTime", t.Kellonaika || r.Kellonaika || p.Kellonaika || "");
+ setVal("startPlace", t.Paikka || r.Paikka || p.Paikka || "");
+ setVal("startAircraft", t.KaytettavaIlmaAlus || r.KaytettavaIlmaAlus || p.KaytettavaIlmaAlus || "DJI Matrice 4TD");
+
+ setVal("date", t.Paivamaara || r.Paivamaara || p.Paivamaara || "");
+ setVal("time", t.Kellonaika || r.Kellonaika || p.Kellonaika || "");
+ setVal("place", t.Paikka || r.Paikka || p.Paikka || "");
+ setVal("riskGps", t.GPS || r.GPS || p.GPS || "");
+ setVal("pilot", t.KaukoOhjaaja || r.KaukoOhjaaja || p.KaukoOhjaaja || "");
+ setVal("observer", t.Tahystaja || r.Tahystaja || p.Tahystaja || "");
+ setVal("ptj", t.PelToimJohtaja || r.PelToimJohtaja || p.PelToimJohtaja || "");
+ setVal("aircraft", t.KaytettavaIlmaAlus || r.KaytettavaIlmaAlus || p.KaytettavaIlmaAlus || "");
+
+ // Tarkistuslista
+ setChk("chkRiskPlan", c.RiskinarviointiJaLentosuunnitelma);
+ setChk("clAuto01", c.NousuJaLaskupaikkaPerustettu);
+ setChk("clAuto02", c.LaskeutumisalustaSijoitettu);
+ setChk("clAuto03", c.IlmoitusLennonjohto);
+ setChk("clAuto04", c.IlmoitusAMC);
+ setChk("clAuto05", c.IlmoitusPuolustusvoimat);
+ setChk("clAuto06", c.IlmoitusRajavartiolaitos);
+ setChk("clAuto07", c.NayttoLiitettyOhjaimeen);
+ setChk("clAuto08", c.KaytettavaOhjelmaAvattu);
+ setChk("clAuto09", c.OhjainKaynnistetty);
+ setChk("clAuto10", c.OhjaimenJaNaytonAkkuRiittava);
+ setChk("clAuto11", c.DroneSilmamaaraisestiTarkastettu);
+ setChk("clAuto12", c.PropellitTarkastettu);
+ setChk("clAuto13", c.GimbaalinTukiPoistettu);
+ setChk("clAuto14", c.DroneKaynnistettyAkutTarkistettu);
+ setChk("clAuto15", c.YhteysDroneenMuodostettu);
+ setChk("clAuto16", c.MerkkivalotToimivat);
+ setChk("clAuto17", c.KameranAsetuksetValittu);
+ setChk("clAuto18", c.MuistikorttiJaTallennustilaOK);
+ setChk("clAuto19", c.NaytonVirheilmoituksetTarkistettu);
+ setChk("clAuto20", c.KompassiKalibroituTarvittaessa);
+ setChk("clAuto21", c.RTHPaikkaJaKorkeusAsetettu);
+ setChk("clAuto22", c.RoottoritKaynnistetty);
+ setChk("clAuto23", c.LeijutustestiTehty);
+ setChk("clAuto24", c.EpatavallisetAanetTarkistettu);
+ setChk("clAuto25", c.SatelliittipaikannusOK);
+ setChk("clAuto26", c.OhjausToimiiNormaalisti);
+ if(c.LennonAloitusPaatos === "GO") setChk("goYes", true);
+ if(c.LennonAloitusPaatos === "NO GO") setChk("goNo", true);
+ setChk("clAuto27", c.LaskeutumispaikkaTurvallinen);
+ setChk("clAuto28", c.KameraVaakatasoonEnnenLaskua);
+ setChk("clAuto29", c.LaskeuduttuMerkatullePaikalle);
+ setChk("clAuto30", c.LopetusilmoitusLennonjohto);
+ setChk("clAuto31", c.LopetusilmoitusAMC);
+ setChk("clAuto32", c.LopetusilmoitusPuolustusvoimat);
+ setChk("clAuto33", c.LopetusilmoitusRajavartiolaitos);
+ setChk("clAuto34", c.DronePuhdistettu);
+ setChk("clAuto35", c.PropellitJaKuntoTarkistettu);
+ setChk("clAuto36", c.HuoltoJaPaivitystarveMaaritetty);
+ setChk("clAuto37", c.AkutLadattu);
+ setChk("openLogCheck", c.LennatystapahtumaKirjattu);
+
+ // Riskinarviointi
+ setVal("mission", r.Lentotehtava || t.Lentotehtava || "");
+ setVal("missionOther", r.LentotehtavaMuu || t.LentotehtavaMuu || "");
+ setVal("altitude", r.Lentokorkeus || "");
+ setVal("area", r.ToimintaAlue || p.ToimintaAlue || "");
+ setVal("virve", r.Virve || p.Virve || t.Virve || "");
+ setVal("vhf", r.VHF || p.VHF || t.VHF || "");
+ setChk("aviamaps", r.AviamapsTarkistettu);
+ setChk("ais", r.AisNotamTarkistettu);
+ setChk("weatherproof", r.DroneWeatherproofTarkistettu);
+ setVal("obstacles", r.NakoJaLentoesteet || "");
+ setVal("crowd", r.Ihmisjoukko || "");
+ setVal("waters", r.Vesistot || "");
+ setVal("signal", r.Signaalihairiot || "");
+ setVal("temp", r.Lampotila || "");
+ setVal("wind", r.Tuuli || "");
+ setVal("rain", r.SadeSumu || "Ei");
+ setVal("light", r.Valoisuus || "Päivä");
+
+ setVal("riskTehtava", r.RiskiTehtava || "EI RISKIÄ");
+ setVal("riskToimintaAlue", r.RiskiToimintaAlue || "EI RISKIÄ");
+ setVal("riskFyysisetEsteet", r.RiskiFyysisetEsteet || "EI RISKIÄ");
+ setVal("riskIhmismaara", r.RiskiIhmismaara || "EI RISKIÄ");
+ setVal("riskSignaalihairiot", r.RiskiSignaalihairiot || "EI RISKIÄ");
+ setVal("riskIlmatila", r.RiskiIlmatila || "EI RISKIÄ");
+ setVal("riskTuuli", r.RiskiTuuliPuuskatTurbulenssi || "EI RISKIÄ");
+ setVal("riskLampotila", r.RiskiLampotila || "EI RISKIÄ");
+ setVal("riskJaaminen", r.RiskiJaaminenKosteus || "EI RISKIÄ");
+ setVal("riskNakyvyys", r.RiskiNakyvyysValoisuus || "EI RISKIÄ");
+ setVal("riskLaitteisto", r.RiskiLaitteistonSoveltuvuus || "EI RISKIÄ");
+ setVal("riskLentaja", r.RiskiLentajanSoveltuvuus || "EI RISKIÄ");
+
+ setVal("riskReduction", r.RiskienVahentaminen || "");
+ setVal("maxAlt", r.MaksimiLentokorkeus || p.MaksimiLentokorkeus || "");
+ setVal("minAlt", r.MinimiLentokorkeus || p.MinimiLentokorkeus || "");
+ setVal("emergency", r.ToimintaHairiotilanteessa || "");
+ setChk("riskIlmoitusLennonjohto", r.IlmoitusLennonjohto);
+ setChk("riskIlmoitusAMC", r.IlmoitusAMC);
+ setChk("riskIlmoitusPV", r.IlmoitusPV);
+ setChk("riskIlmoitusMuu", r.IlmoitusMuu);
+ setVal("ptjDecision", r.PTJPaatos || "GO");
+ setVal("riskNotes", r.Muistiinpanot || "");
+
+ // Lentosuunnitelma
+ setVal("operationModel", p.Operaatiomalli || "Ensitiedustelu");
+ setVal("planFreeText", p.LentosuunnitelmaVapaaTeksti || "");
+ setVal("startPlace2", p.Lahtopaikka || "");
+ setVal("landingPlace", p.Laskupaikka || "");
+ setVal("planStartGps", p.LahtoLaskuGPS || t.GPS || r.GPS || "");
+ setVal("planLandingGps", p.LahtoLaskuGPS || t.GPS || r.GPS || "");
+ setVal("vara1", p.Vara1 || "");
+ setVal("hata1", p.Hata1 || "");
+ setVal("vara2", p.Vara2 || "");
+ setVal("hata2", p.Hata2 || "");
+ setVal("operationStart", p.ToiminnanAlkaminen || "");
+ setVal("operationEnd", p.ToiminnanPaattyminen || "");
+ setVal("up1", p.Nousu1 || "");
+ setVal("down1", p.Lasku1 || "");
+ setVal("up2", p.Nousu2 || "");
+ setVal("down2", p.Lasku2 || "");
+ setVal("up3", p.Nousu3 || "");
+ setVal("down3", p.Lasku3 || "");
+ setVal("up4", p.Nousu4 || "");
+ setVal("down4", p.Lasku4 || "");
+ setVal("flightMinutes", p.LentominuutitYhteensa || "");
+ setVal("planNotes", p.Muistiinpanot || "");
+
+ // Lentopäiväkirja
+ setVal("logDate", l.LennonPaivamaara || t.Paivamaara || r.Paivamaara || "");
+ setVal("logPlace", l.LennonLahtoJaLaskupaikka || "");
+ setVal("logGps", l.GPS || p.LahtoLaskuGPS || t.GPS || "");
+ setVal("logCaptain", l.IlmaAluksenPaallikko || t.KaukoOhjaaja || r.KaukoOhjaaja || "");
+ setVal("logAircraft", l.IlmaAluksenValmistajaJaMalli || t.KaytettavaIlmaAlus || r.KaytettavaIlmaAlus || "");
+ setVal("logStart", l.AlkamisAika || p.ToiminnanAlkaminen || "");
+ setVal("logEnd", l.PaattymisAika || p.ToiminnanPaattyminen || "");
+ setChk("logVLOS", l.VLOS);
+ setChk("logEVLOS", l.EVLOS);
+ setChk("logBVLOS", l.BVLOS);
+ setVal("logMaxAlt", l.Maksimilentokorkeus || "");
+ setVal("logNearCrowd", l.LahempanaKuin50mIhmisjoukosta || "");
+ setVal("logMissionNature", l.LentotehtavanLuonne || t.Lentotehtava || r.Lentotehtava || "");
+ setVal("logEvents", l.ErityisetTapahtumat || "");
+
+ calcRisk();
+ calcMinutes();
+ sync();
+ updateName();
+ setupOpenLogButton();
+ autosave();
+ saveLastTaskKey();
+}
+
 async function reopenTask(tehtavaNimi){
  if(!tehtavaNimi) return;
- if(!confirm("Avataanko tehtävä uudelleen Kesken-tilaan?\n\n"+tehtavaNimi)) return;
+ if(!confirm("Avataanko tehtävä muokattavaksi?\n\n"+tehtavaNimi+"\n\nTila muutetaan Kesken-tilaan ja tallennetut tiedot ladataan lomakkeelle.")) return;
  const status=$("adminStatus");
  try{
-  if(status) status.textContent="Avataan tehtävää uudelleen...";
-  const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"reopenTask",tehtavaNimi})});
-  const text=await res.text(); let data={}; try{data=JSON.parse(text);}catch(e){data={ok:res.ok};}
-  if(!data.ok) throw new Error(data.error||"Uudelleen avaaminen epäonnistui");
-  if(status) status.textContent="Tehtävä avattu uudelleen: "+tehtavaNimi;
+  if(status) status.textContent="Avataan tehtävää muokattavaksi...";
+
+  const reopenRes=await fetch(API_URL,{
+    method:"POST",
+    headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body:JSON.stringify({action:"reopenTask",tehtavaNimi})
+  });
+  const reopenText=await reopenRes.text();
+  let reopenData={};
+  try{reopenData=JSON.parse(reopenText);}catch(e){reopenData={ok:reopenRes.ok};}
+  if(!reopenData.ok) throw new Error(reopenData.error||"Uudelleen avaaminen epäonnistui");
+
+  const url = API_URL + "?action=getTask&tehtavaNimi=" + encodeURIComponent(tehtavaNimi) + "&t=" + Date.now();
+  const res = await fetch(url);
+  const data = await res.json();
+  if(!data.ok) throw new Error(data.error || "Tehtävän tietojen haku epäonnistui");
+
+  loadReportToForm(data.report || {});
+  if(status) status.textContent="Tehtävä avattu muokattavaksi: "+tehtavaNimi;
+  location.hash="#risk";
   await loadTasks();
- }catch(err){ if(status) status.textContent="Virhe uudelleen avaamisessa: "+(err.message||err); }
+ }catch(err){
+  if(status) status.textContent="Virhe uudelleen avaamisessa: "+(err.message||err);
+ }
 }
 
 document.addEventListener("DOMContentLoaded",function(){
