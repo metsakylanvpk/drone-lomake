@@ -282,7 +282,7 @@ section.card{scroll-margin-top:125px}
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta hallinta fixed-lists3-2 final-lock</div>
+<div class="title">VPK UAS – beta hallinta fixed-lists-23-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -296,10 +296,8 @@ section.card{scroll-margin-top:125px}
 </div>
 </div>
 <datalist id="pilotSuggestions">
-  <option value="Kirjoita nimi tähän"></option>
 </datalist>
 <datalist id="observerSuggestions">
-  <option value="Kirjoita nimi tähän"></option>
 </datalist>
 <datalist id="ptjSuggestions">
   <option value="P33"></option>
@@ -387,7 +385,7 @@ section.card{scroll-margin-top:125px}
 <div class="field"><label>GPS-sijainti</label><input id="riskGps" placeholder="Ei haettu" readonly=""/></div>
 <div class="field"><label>Kauko-ohjaaja</label><input id="pilot" list="pilotSuggestions" autocomplete="off"/></div>
 <div class="field"><label>Tähystäjä</label><input id="observer" list="observerSuggestions" autocomplete="off"/></div>
-<div class="field"><label>Pel.toim.joht.</label><input id="ptj" list="ptjSuggestions" autocomplete="off" value="P33"/></div>
+<div class="field"><label>Pel.toim.joht.</label><input id="ptj" list="ptjSuggestions" autocomplete="off"/></div>
 </div>
 <div class="sectiontitle">Lentotehtävä</div>
 <div class="grid2">
@@ -632,7 +630,7 @@ section.card{scroll-margin-top:125px}
 <div class="field"><label>Päättymisaika</label><input id="logEnd" type="time"/></div>
 </div>
 <div class="inlinechecks"><label><input id="logVLOS" type="checkbox"/> VLOS – näköyhteydessä lennättäminen</label><label><input id="logEVLOS" type="checkbox"/> EVLOS – laajennettu näköyhteys tähystäjän avulla</label><label><input id="logBVLOS" type="checkbox"/> BVLOS – näköyhteyden ulkopuolella lennättäminen</label></div>
-<div class="grid2"><div class="field"><label>Maksimilentokorkeus</label><input id="logMaxAlt" type="number"/></div><div class="field"><label>Lennetty lähempänä kuin 50 metrin etäisyydellä ihmisjoukosta</label><input id="logNearCrowd"/></div><div class="field"><label>Lentotehtävän luonne</label><input id="logMissionNature" readonly=""/></div></div>
+<div class="grid2"><div class="field"><label>Maksimilentokorkeus</label><input id="logMaxAlt" type="number" readonly/></div><div class="field"><label>Lennetty lähempänä kuin 50 metrin etäisyydellä ihmisjoukosta</label><input id="logNearCrowd"/></div><div class="field"><label>Lentotehtävän luonne</label><input id="logMissionNature" readonly=""/></div></div>
 <div class="field"><label>Muut lennolla sattuneet erityiset tapahtumat</label><textarea id="logEvents"></textarea></div>
 <div class="sectiontitle">Tehtävän päättäminen</div>
 <div class="notice">Päätä tehtävä, kun tiedot ovat valmiit. Jos lentoa ei tehdä tai tehtävä keskeytyy, voit merkitä tehtävän keskeytetyksi ilman lisäselityksiä.</div>
@@ -742,6 +740,7 @@ function sync(){
    $("operationEnd").value = val("logEnd");
  }
 
+ if($("logMaxAlt")) $("logMaxAlt").value=val("maxAlt")||"";
  $("logMissionNature").value=val("mission")+(val("missionOther")?"/ "+val("missionOther"):"");
 }
 function collect(){
@@ -1989,7 +1988,7 @@ function loadReportToForm(report){
  setChk("logVLOS", l.VLOS);
  setChk("logEVLOS", l.EVLOS);
  setChk("logBVLOS", l.BVLOS);
- setVal("logMaxAlt", l.Maksimilentokorkeus || "");
+ setVal("logMaxAlt", l.Maksimilentokorkeus || r.MaksimiLentokorkeus || p.MaksimiLentokorkeus || "");
  setVal("logNearCrowd", l.LahempanaKuin50mIhmisjoukosta || "");
  setVal("logMissionNature", l.LentotehtavanLuonne || t.Lentotehtava || r.Lentotehtava || "");
  setVal("logEvents", l.ErityisetTapahtumat || "");
