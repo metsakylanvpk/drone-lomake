@@ -181,7 +181,7 @@ section.card{scroll-margin-top:125px}
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta hallinta final-save3-2 final-lock</div>
+<div class="title">VPK UAS – beta hallinta reopen3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -194,6 +194,9 @@ section.card{scroll-margin-top:125px}
 <button id="manualSaveBtn" type="button">Tallenna nyt</button>
 </div>
 </div>
+<datalist id="pilotSuggestions"></datalist>
+<datalist id="observerSuggestions"></datalist>
+<datalist id="ptjSuggestions"></datalist>
 <div class="wrap">
 <section class="card" id="start">
 <div class="head start"><h2>Aloita uusi tehtävä</h2></div>
@@ -217,7 +220,7 @@ section.card{scroll-margin-top:125px}
 <div class="head check"><h2>TARKASTUSLISTA – PELASTUSTOIMEN UAS-TOIMINTA</h2></div>
 <div class="body">
 <div class="sectiontitle">ENNEN LENNON ALOITTAMISTA:</div>
-<label class="checkline"><input id="chkRiskPlan" type="checkbox"/><span>Kirjallinen riskinarviointi ja lentosuunnitelma (lomakkeen täyttö)</span><span style="margin-left:auto"><a class="btn" href="#risk">Avaa lomake</a></span></label>
+<label class="checkline"><input id="chkRiskPlan" type="checkbox"/><span>Kirjallinen riskinarviointi ja lentosuunnitelma (lomakkeen täyttö)</span></label>
 <label class="checkline"><input id="clAuto01" type="checkbox"/><span>Nousu- ja laskupaikan perustaminen</span></label>
 <label class="checkline"><input id="clAuto02" type="checkbox"/><span>Lähtö- ja laskeutumisalusta sijoitettu dronen alle</span></label>
 <div class="sectiontitle" style="margin-top:10px">Ilmoitukset</div>
@@ -275,9 +278,9 @@ section.card{scroll-margin-top:125px}
 <div class="field"><label>Päivämäärä</label><input id="date" readonly="" type="date"/></div>
 <div class="field"><label>Kellonaika</label><input id="time" readonly="" type="time"/></div>
 <div class="field"><label>GPS-sijainti</label><input id="riskGps" placeholder="Ei haettu" readonly=""/></div>
-<div class="field"><label>Kauko-ohjaaja</label><input id="pilot"/></div>
-<div class="field"><label>Tähystäjä</label><input id="observer"/></div>
-<div class="field"><label>Pel.toim.joht.</label><input id="ptj"/></div>
+<div class="field"><label>Kauko-ohjaaja</label><input id="pilot" name="vpk-pilot" autocomplete="name" list="pilotSuggestions"/></div>
+<div class="field"><label>Tähystäjä</label><input id="observer" name="vpk-observer" autocomplete="name" list="observerSuggestions"/></div>
+<div class="field"><label>Pel.toim.joht.</label><input id="ptj" name="vpk-ptj" autocomplete="name" list="ptjSuggestions"/></div>
 </div>
 <div class="sectiontitle">Lentotehtävä</div>
 <div class="grid2">
@@ -968,6 +971,9 @@ async function finishTask(){
    sync();
    calcMinutes();
    calcRisk();
+   storeName("vpk_names_pilot", val("pilot"));
+   storeName("vpk_names_observer", val("observer"));
+   storeName("vpk_names_ptj", val("ptj"));
    autosave();
 
    currentTaskStatus = "Valmis";
@@ -1018,6 +1024,9 @@ async function cancelTask(){
    sync();
    calcMinutes();
    calcRisk();
+   storeName("vpk_names_pilot", val("pilot"));
+   storeName("vpk_names_observer", val("observer"));
+   storeName("vpk_names_ptj", val("ptj"));
    autosave();
 
    currentTaskStatus = "Keskeytetty";
@@ -1567,6 +1576,7 @@ async function loadTasks(){
          </div>
          <div class="taskactions">
            <button type="button" onclick="openReportForTask('${escHtml(name)}')">Avaa raportti</button>
+           <button type="button" class="secondary" onclick="reopenTask('${escHtml(name)}')">Avaa tehtävä uudelleen</button>
            <button type="button" class="secondary" onclick="deleteTask('${escHtml(name)}')">Poista tehtävä</button>
          </div>
        </div>`;
@@ -1645,11 +1655,51 @@ function closeReport(){
 
 window.openReportForTask = openReportForTask;
 window.deleteTask = deleteTask;
+window.reopenTask = reopenTask;
 window.loadTasks = loadTasks;
+
+
+function getStoredNames(key){
+ try{return JSON.parse(localStorage.getItem(key)||"[]");}catch(e){return [];}
+}
+function storeName(key,value){
+ const name=String(value||"").trim(); if(!name) return;
+ try{
+  let list=getStoredNames(key).filter(x=>String(x).trim().toLowerCase()!==name.toLowerCase());
+  list.unshift(name); list=list.slice(0,20);
+  localStorage.setItem(key,JSON.stringify(list));
+ }catch(e){}
+}
+function fillNameDatalist(datalistId,key){
+ const dl=$(datalistId); if(!dl) return;
+ dl.innerHTML=getStoredNames(key).map(n=>`<option value="${escHtml(n)}"></option>`).join("");
+}
+function setupNameSuggestions(){
+ fillNameDatalist("pilotSuggestions","vpk_names_pilot");
+ fillNameDatalist("observerSuggestions","vpk_names_observer");
+ fillNameDatalist("ptjSuggestions","vpk_names_ptj");
+ [["pilot","vpk_names_pilot","pilotSuggestions"],["observer","vpk_names_observer","observerSuggestions"],["ptj","vpk_names_ptj","ptjSuggestions"]].forEach(([id,key,dl])=>{
+  const el=$(id); if(!el) return;
+  ["change","blur"].forEach(ev=>el.addEventListener(ev,()=>{storeName(key,el.value);fillNameDatalist(dl,key);}));
+ });
+}
+async function reopenTask(tehtavaNimi){
+ if(!tehtavaNimi) return;
+ if(!confirm("Avataanko tehtävä uudelleen Kesken-tilaan?\n\n"+tehtavaNimi)) return;
+ const status=$("adminStatus");
+ try{
+  if(status) status.textContent="Avataan tehtävää uudelleen...";
+  const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"reopenTask",tehtavaNimi})});
+  const text=await res.text(); let data={}; try{data=JSON.parse(text);}catch(e){data={ok:res.ok};}
+  if(!data.ok) throw new Error(data.error||"Uudelleen avaaminen epäonnistui");
+  if(status) status.textContent="Tehtävä avattu uudelleen: "+tehtavaNimi;
+  await loadTasks();
+ }catch(err){ if(status) status.textContent="Virhe uudelleen avaamisessa: "+(err.message||err); }
+}
 
 document.addEventListener("DOMContentLoaded",function(){
  const today=new Date().toISOString().slice(0,10); $("startDate").value=today; if($("startTime") && !$("startTime").value) $("startTime").value=currentTimeHHMM();
-  calcRisk(); updateName(); checkRecovery();
+  calcRisk(); updateName(); checkRecovery(); setupNameSuggestions();
  $("startBtn").addEventListener("click",startTask);
  $("gpsBtn").addEventListener("click",getGps);
  document.querySelectorAll("#riskRows select").forEach(s=>{
