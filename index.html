@@ -149,9 +149,20 @@ section.card{scroll-margin-top:125px}
 .report-checkline.done{background:#fff;border-color:var(--line)}
 .report-checkline input{width:auto;margin-top:3px;accent-color:#0f172a;transform:scale(1.15)}
 
+
+.loadingoverlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;z-index:10000;padding:20px}
+.loadingbox{background:#fff;border-radius:18px;padding:20px;max-width:420px;width:100%;box-shadow:0 15px 50px rgba(0,0,0,.28);border:1px solid var(--line);text-align:center}
+.spinner{width:34px;height:34px;border:4px solid #e5e7eb;border-top-color:#0f172a;border-radius:50%;animation:spin .9s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
+<div id="loadingOverlay" class="loadingoverlay">
+  <div class="loadingbox">
+    <div class="spinner"></div>
+    <div id="loadingText" style="font-weight:900">Hetki...</div>
+  </div>
+</div>
 
 <div id="reportModal" class="reportmodal">
   <div class="reportbox">
@@ -181,7 +192,7 @@ section.card{scroll-margin-top:125px}
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta hallinta edit3-2 final-lock</div>
+<div class="title">VPK UAS – beta hallinta edit-fixed3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -692,6 +703,51 @@ function setSaveStatus(text, cls){
  el.className="savestatus " + (cls||"wait");
 }
 
+
+function showLoading(text){
+ const o=$("loadingOverlay"), t=$("loadingText");
+ if(t) t.textContent=text||"Hetki...";
+ if(o) o.style.display="flex";
+}
+function hideLoading(){
+ const o=$("loadingOverlay");
+ if(o) o.style.display="none";
+}
+function parseTaskNameParts(name){
+ const parts=String(name||"").split("_");
+ if(parts.length<3) return null;
+ const tr=parts[1]||"";
+ return {date:parts[0]||"", time:tr.length===4?tr.slice(0,2)+":"+tr.slice(2):tr, place:parts[2]||""};
+}
+function ensureActiveTaskFields(){
+ if(currentTaskName){
+   const p=parseTaskNameParts(currentTaskName);
+   if(p){
+     if($("date")&&!$("date").value) $("date").value=p.date;
+     if($("time")&&!$("time").value) $("time").value=p.time;
+     if($("place")&&!$("place").value) $("place").value=p.place;
+     if($("startDate")&&!$("startDate").value) $("startDate").value=p.date;
+     if($("startTime")&&!$("startTime").value) $("startTime").value=p.time;
+     if($("startPlace")&&!$("startPlace").value) $("startPlace").value=p.place;
+   }
+ }
+ if($("date")&&$("startDate")&&!$("date").value&&$("startDate").value) $("date").value=$("startDate").value;
+ if($("time")&&$("startTime")&&!$("time").value&&$("startTime").value) $("time").value=$("startTime").value;
+ if($("place")&&$("startPlace")&&!$("place").value&&$("startPlace").value) $("place").value=$("startPlace").value;
+ if($("aircraft")&&$("startAircraft")&&!$("aircraft").value&&$("startAircraft").value) $("aircraft").value=$("startAircraft").value;
+ return !!(val("date")&&val("time")&&val("place"));
+}
+function activateLoadedTask(tehtavaNimi){
+ currentTaskName=String(tehtavaNimi||currentTaskName||"").trim();
+ currentTaskStatus="Kesken";
+ taskClosing=false;
+ ensureActiveTaskFields();
+ if($("finishTaskBtn")){ $("finishTaskBtn").disabled=false; $("finishTaskBtn").textContent="Päätä tehtävä ja tallenna lopullisesti"; }
+ if($("cancelTaskBtn")){ $("cancelTaskBtn").disabled=false; $("cancelTaskBtn").textContent="Keskeytä tehtävä ja tallenna lopullisesti"; }
+ updateName(); autosave(); saveLastTaskKey();
+ setSaveStatus("Tehtävä avattu muokattavaksi: "+taskName(),"ok");
+}
+
 function getChecklistData(){
  const boxes=[...document.querySelectorAll("#checklist input[type='checkbox']")];
  const radio=[...document.querySelectorAll("#checklist input[name='go']")];
@@ -897,6 +953,7 @@ function buildSections(){
 }
 
 async function saveToBackend(toiminto, tila){
+ ensureActiveTaskFields();
  if(!val("date") || !val("time") || !val("place")){
   setSaveStatus("Ei tallennettu: aloita tehtävä ensin", "err");
   return false;
@@ -916,6 +973,8 @@ async function saveToBackend(toiminto, tila){
   browserInfo:navigator.userAgent || ""
  };
  try{
+  const showSaveOverlay = toiminto !== "Autosave";
+  if(showSaveOverlay) showLoading("Tallennetaan Google Sheetiin...");
   setSaveStatus("Tallennetaan Google Sheetiin...", "wait");
   const res = await fetch(API_URL, {
     method:"POST",
@@ -927,6 +986,7 @@ async function saveToBackend(toiminto, tila){
   try{ json = JSON.parse(text); }catch(e){ json={ok:res.ok, raw:text}; }
   if(json.ok){
     lastBackendSave = Date.now();
+    if(showSaveOverlay) hideLoading();
     setSaveStatus("Tallennettu Google Sheetiin " + new Date().toLocaleTimeString("fi-FI"), "ok");
     return true;
   }
@@ -939,9 +999,11 @@ async function saveToBackend(toiminto, tila){
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body:JSON.stringify(payload)
     });
+    if(showSaveOverlay) hideLoading();
     setSaveStatus("Tallennus lähetetty (vastausta ei voitu varmistaa). Tarkista Sheet tarvittaessa.", "wait");
     return true;
   }catch(err2){
+    if(showSaveOverlay) hideLoading();
     setSaveStatus("Tallennusvirhe: tiedot tallessa laitteella. Yritä uudelleen.", "err");
     return false;
   }
@@ -1002,6 +1064,7 @@ async function finishTask(){
      finishBtn.textContent = "Päätä tehtävä ja tallenna lopullisesti";
    }
    if(cancelBtn) cancelBtn.disabled = false;
+   hideLoading();
    setSaveStatus("Lopullinen tallennus epäonnistui: tarkista yhteys ja yritä uudelleen", "err");
  }
 }
@@ -1055,6 +1118,7 @@ async function cancelTask(){
      cancelBtn.textContent = "Keskeytä tehtävä ja tallenna lopullisesti";
    }
    if(finishBtn) finishBtn.disabled = false;
+   hideLoading();
    setSaveStatus("Keskeytyksen tallennus epäonnistui: tarkista yhteys ja yritä uudelleen", "err");
  }
 }
@@ -1538,6 +1602,7 @@ function renderFullReport(r){
 }
 
 async function loadTasks(){
+ showLoading("Haetaan tehtävälistaa...");
  const list = $("taskList");
  const status = $("adminStatus");
  if(status) status.textContent = "Haetaan tehtäviä...";
@@ -1552,6 +1617,7 @@ async function loadTasks(){
 
    const tasks = data.tasks || [];
    if(status) status.textContent = "Tehtäviä löytyi: " + tasks.length;
+   hideLoading();
 
    if(!tasks.length){
      if(list) list.innerHTML = '<div class="notice">Tehtäviä ei löytynyt.</div>';
@@ -1584,12 +1650,14 @@ async function loadTasks(){
    }
 
  }catch(err){
+   hideLoading();
    if(status) status.textContent = "Virhe: " + (err.message || err);
    if(list) list.innerHTML = '<div class="warn">Tehtävälistaa ei saatu haettua. Tarkista Apps Script -lisäykset ja deploy.</div>';
  }
 }
 
 async function openReportForTask(tehtavaNimi){
+ showLoading("Avataan raporttia...");
  const modal = $("reportModal");
  const content = $("reportContent");
  const title = $("reportTitle");
@@ -1611,7 +1679,9 @@ async function openReportForTask(tehtavaNimi){
    if(content){
      content.innerHTML = renderFullReport(r);
    }
+   hideLoading();
  }catch(err){
+   hideLoading();
    if(content){
      content.innerHTML = `<div class="warn">Raportin haku epäonnistui: ${escHtml(err.message || err)}</div>`;
    }
@@ -1627,6 +1697,7 @@ async function deleteTask(tehtavaNimi){
  const status = $("adminStatus");
 
  try{
+   showLoading("Poistetaan tehtävää...");
    if(status) status.textContent = "Poistetaan tehtävää...";
    const payload = { action:"deleteTask", tehtavaNimi:tehtavaNimi };
    const res = await fetch(API_URL, {
@@ -1641,9 +1712,11 @@ async function deleteTask(tehtavaNimi){
 
    if(!data.ok) throw new Error(data.error || "Poisto epäonnistui");
 
+   hideLoading();
    if(status) status.textContent = "Tehtävä poistettu: " + tehtavaNimi;
    await loadTasks();
  }catch(err){
+   hideLoading();
    if(status) status.textContent = "Poistovirhe: " + (err.message || err);
  }
 }
@@ -1855,8 +1928,7 @@ function loadReportToForm(report){
  sync();
  updateName();
  setupOpenLogButton();
- autosave();
- saveLastTaskKey();
+ activateLoadedTask(currentTaskName);
 }
 
 async function reopenTask(tehtavaNimi){
@@ -1864,6 +1936,7 @@ async function reopenTask(tehtavaNimi){
  if(!confirm("Avataanko tehtävä muokattavaksi?\n\n"+tehtavaNimi+"\n\nTila muutetaan Kesken-tilaan ja tallennetut tiedot ladataan lomakkeelle.")) return;
  const status=$("adminStatus");
  try{
+  showLoading("Avataan tehtävää muokattavaksi...");
   if(status) status.textContent="Avataan tehtävää muokattavaksi...";
 
   const reopenRes=await fetch(API_URL,{
@@ -1882,10 +1955,12 @@ async function reopenTask(tehtavaNimi){
   if(!data.ok) throw new Error(data.error || "Tehtävän tietojen haku epäonnistui");
 
   loadReportToForm(data.report || {});
+  hideLoading();
   if(status) status.textContent="Tehtävä avattu muokattavaksi: "+tehtavaNimi;
   location.hash="#risk";
   await loadTasks();
  }catch(err){
+  hideLoading();
   if(status) status.textContent="Virhe uudelleen avaamisessa: "+(err.message||err);
  }
 }
