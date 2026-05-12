@@ -192,7 +192,7 @@ section.card{scroll-margin-top:125px}
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta hallinta edit-fixed3-2 final-lock</div>
+<div class="title">VPK UAS – beta hallinta clean-ui3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -212,7 +212,7 @@ section.card{scroll-margin-top:125px}
 <section class="card" id="start">
 <div class="head start"><h2>Aloita uusi tehtävä</h2></div>
 <div class="body">
-<div class="notice">QR-koodi avaa uuden tyhjän tehtävän. Täytä ensin päivämäärä, kellonaika ja paikka. Näistä muodostuu tehtävän nimi, jonka alle kaikki muutokset tallentuvat automaattisesti. GPS haetaan tarvittaessa myöhemmin lentosuunnitelmaosiossa.</div>
+<div class="notice">Täytä ensin päivämäärä, kellonaika, paikka ja drone. Näistä muodostuu tehtävän nimi, jonka alle kaikki muutokset tallentuvat automaattisesti. GPS haetaan tarvittaessa myöhemmin lentosuunnitelmaosiossa.</div>
 <div class="grid3">
 <div class="field"><label>Päivämäärä</label><input id="startDate" type="date"/></div>
 <div class="field"><label>Kellonaika</label><input id="startTime" type="time"/></div>
@@ -221,7 +221,6 @@ section.card{scroll-margin-top:125px}
 </div>
 <div style="margin-top:12px">
 <button id="startBtn" type="button">Aloita tehtävä</button>
-<a class="btn secondary" href="#checklist">Jos nappi ei toimi, avaa lomake tästä</a>
 </div>
 <div class="warn hidden" id="startError" style="margin-top:12px">Täytä päivämäärä, kellonaika ja paikka ensin.</div>
 </div>
@@ -541,8 +540,8 @@ section.card{scroll-margin-top:125px}
 <div class="sectiontitle">Tehtävän päättäminen</div>
 <div class="notice">Päätä tehtävä, kun tiedot ovat valmiit. Jos lentoa ei tehdä tai tehtävä keskeytyy, voit merkitä tehtävän keskeytetyksi ilman lisäselityksiä.</div>
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
-<button id="finishTaskBtn" type="button">Päätä tehtävä ja tallenna lopullisesti</button>
-<button class="secondary" id="cancelTaskBtn" type="button">Keskeytä tehtävä ja tallenna lopullisesti</button>
+<button id="finishTaskBtn" type="button">Päätä tehtävä ja tallenna</button>
+<button class="secondary" id="cancelTaskBtn" type="button">Keskeytä tehtävä ja tallenna</button>
 </div>
 </div>
 </section>
@@ -550,7 +549,7 @@ section.card{scroll-margin-top:125px}
 <section id="admin" class="card">
   <div class="head start"><h2>Hallinta / Arkisto</h2></div>
   <div class="body">
-    <div class="notice">Hallinnassa voit hakea tehtävät tietokannasta, avata valitusta tehtävästä raportin ja poistaa testitehtäviä. Poisto kysyy varmistuksen ja poistaa rivit kaikista tehtävävälilehdistä samalla tehtävänimellä.</div>
+    <div class="notice">Hallinnassa voit hakea tehtävät tietokannasta, avata valitusta tehtävästä raportin, avata tehtävän muokattavaksi ja poistaa tehtäviä. Poisto kysyy varmistuksen ja poistaa rivit kaikista tehtävävälilehdistä samalla tehtävänimellä.</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
       <button type="button" id="loadTasksBtn">Hae tehtävät tietokannasta</button>
       <button type="button" id="refreshTasksBtn" class="secondary">Päivitä lista</button>
@@ -742,8 +741,8 @@ function activateLoadedTask(tehtavaNimi){
  currentTaskStatus="Kesken";
  taskClosing=false;
  ensureActiveTaskFields();
- if($("finishTaskBtn")){ $("finishTaskBtn").disabled=false; $("finishTaskBtn").textContent="Päätä tehtävä ja tallenna lopullisesti"; }
- if($("cancelTaskBtn")){ $("cancelTaskBtn").disabled=false; $("cancelTaskBtn").textContent="Keskeytä tehtävä ja tallenna lopullisesti"; }
+ if($("finishTaskBtn")){ $("finishTaskBtn").disabled=false; $("finishTaskBtn").textContent="Päätä tehtävä ja tallenna"; }
+ if($("cancelTaskBtn")){ $("cancelTaskBtn").disabled=false; $("cancelTaskBtn").textContent="Keskeytä tehtävä ja tallenna"; }
  updateName(); autosave(); saveLastTaskKey();
  setSaveStatus("Tehtävä avattu muokattavaksi: "+taskName(),"ok");
 }
@@ -1061,7 +1060,7 @@ async function finishTask(){
    taskClosing = false;
    if(finishBtn){
      finishBtn.disabled = false;
-     finishBtn.textContent = "Päätä tehtävä ja tallenna lopullisesti";
+     finishBtn.textContent = "Päätä tehtävä ja tallenna";
    }
    if(cancelBtn) cancelBtn.disabled = false;
    hideLoading();
@@ -1115,7 +1114,7 @@ async function cancelTask(){
    taskClosing = false;
    if(cancelBtn){
      cancelBtn.disabled = false;
-     cancelBtn.textContent = "Keskeytä tehtävä ja tallenna lopullisesti";
+     cancelBtn.textContent = "Keskeytä tehtävä ja tallenna";
    }
    if(finishBtn) finishBtn.disabled = false;
    hideLoading();
