@@ -140,6 +140,15 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 .report-checkline.done{background:#f0fdf4;border-color:#86efac}
 .report-empty{color:#94a3b8}
 
+
+section.card{scroll-margin-top:125px}
+@media(max-width:850px){section.card{scroll-margin-top:145px}}
+
+
+.report-checkline{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:13px;background:var(--soft);padding:10px 11px;margin-bottom:8px;color:var(--ink)}
+.report-checkline.done{background:#fff;border-color:var(--line)}
+.report-checkline input{width:auto;margin-top:3px;accent-color:#0f172a;transform:scale(1.15)}
+
 </style>
 </head>
 <body>
@@ -172,7 +181,7 @@ button.secondary,.btn.secondary{background:#fff;color:var(--ink);border:1px soli
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta hallinta raportti+33-2 final-lock</div>
+<div class="title">VPK UAS – beta hallinta final-save3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -643,7 +652,7 @@ function startTask(){
  $("startError").classList.add("hidden");
  $("date").value=val("startDate"); $("time").value=val("startTime"); $("place").value=val("startPlace"); if($("startAircraft") && $("aircraft")) $("aircraft").value=val("startAircraft");
  currentTaskName = buildTaskName();
- sync(); autosave(); saveLastTaskKey(); saveToBackend("StartTask"); location.hash="#checklist";
+ sync(); autosave(); saveLastTaskKey(); saveToBackend("StartTask"); location.hash="#risk";
 }
 function done(){
  $("chkRiskPlan").checked=true;
@@ -955,20 +964,40 @@ async function finishTask(){
  }
  if(cancelBtn) cancelBtn.disabled = true;
 
- currentTaskStatus = "Valmis";
- await saveToBackend("FinalSave", "Valmis");
-
  try{
-   localStorage.removeItem("vpk_uas_" + taskName());
-   localStorage.removeItem("vpk_uas_last_task");
-   currentTaskName = "";
- }catch(e){}
+   sync();
+   calcMinutes();
+   calcRisk();
+   autosave();
 
- setSaveStatus("Tehtävä merkitty valmiiksi", "ok");
+   currentTaskStatus = "Valmis";
+   const ok = await saveToBackend("FinalSave", "Valmis");
 
- setTimeout(()=>{
-   window.location.assign(window.location.origin + window.location.pathname + "?newtask=" + Date.now());
- }, 1000);
+   if(!ok){
+     throw new Error("Lopullinen tallennus epäonnistui");
+   }
+
+   try{
+     localStorage.removeItem("vpk_uas_" + taskName());
+     localStorage.removeItem("vpk_uas_last_task");
+     currentTaskName = "";
+   }catch(e){}
+
+   setSaveStatus("Tehtävä merkitty valmiiksi", "ok");
+
+   setTimeout(()=>{
+     window.location.assign(window.location.origin + window.location.pathname + "?newtask=" + Date.now());
+   }, 1000);
+
+ }catch(err){
+   taskClosing = false;
+   if(finishBtn){
+     finishBtn.disabled = false;
+     finishBtn.textContent = "Päätä tehtävä ja tallenna lopullisesti";
+   }
+   if(cancelBtn) cancelBtn.disabled = false;
+   setSaveStatus("Lopullinen tallennus epäonnistui: tarkista yhteys ja yritä uudelleen", "err");
+ }
 }
 
 async function cancelTask(){
@@ -985,20 +1014,40 @@ async function cancelTask(){
  }
  if(finishBtn) finishBtn.disabled = true;
 
- currentTaskStatus = "Keskeytetty";
- await saveToBackend("CancelTask", "Keskeytetty");
-
  try{
-   localStorage.removeItem("vpk_uas_" + taskName());
-   localStorage.removeItem("vpk_uas_last_task");
-   currentTaskName = "";
- }catch(e){}
+   sync();
+   calcMinutes();
+   calcRisk();
+   autosave();
 
- setSaveStatus("Tehtävä merkitty keskeytetyksi", "wait");
+   currentTaskStatus = "Keskeytetty";
+   const ok = await saveToBackend("CancelTask", "Keskeytetty");
 
- setTimeout(()=>{
-   window.location.assign(window.location.origin + window.location.pathname + "?newtask=" + Date.now());
- }, 1000);
+   if(!ok){
+     throw new Error("Keskeytyksen tallennus epäonnistui");
+   }
+
+   try{
+     localStorage.removeItem("vpk_uas_" + taskName());
+     localStorage.removeItem("vpk_uas_last_task");
+     currentTaskName = "";
+   }catch(e){}
+
+   setSaveStatus("Tehtävä merkitty keskeytetyksi", "wait");
+
+   setTimeout(()=>{
+     window.location.assign(window.location.origin + window.location.pathname + "?newtask=" + Date.now());
+   }, 1000);
+
+ }catch(err){
+   taskClosing = false;
+   if(cancelBtn){
+     cancelBtn.disabled = false;
+     cancelBtn.textContent = "Keskeytä tehtävä ja tallenna lopullisesti";
+   }
+   if(finishBtn) finishBtn.disabled = false;
+   setSaveStatus("Keskeytyksen tallennus epäonnistui: tarkista yhteys ja yritä uudelleen", "err");
+ }
 }
 
 function setupOpenLogButton(){
@@ -1014,7 +1063,7 @@ function setupOpenLogButton(){
  openLogCheck.addEventListener("change", ()=>{
   updateLogButton();
   autosave();
-  queueBackendSave();
+  if(!taskClosing) queueBackendSave();
  });
 
  openLogBtn.addEventListener("click", ()=>{
@@ -1604,8 +1653,8 @@ document.addEventListener("DOMContentLoaded",function(){
  $("startBtn").addEventListener("click",startTask);
  $("gpsBtn").addEventListener("click",getGps);
  document.querySelectorAll("#riskRows select").forEach(s=>{
-  s.addEventListener("change",()=>{calcRisk();sync();queueBackendSave();});
-  s.addEventListener("input",()=>{calcRisk();sync();queueBackendSave();});
+  s.addEventListener("change",()=>{calcRisk();sync();if(!taskClosing) queueBackendSave();});
+  s.addEventListener("input",()=>{calcRisk();sync();if(!taskClosing) queueBackendSave();});
  });
  $("doneBtn").addEventListener("click",done);
  const manualSaveBtn=$("manualSaveBtn"); if(manualSaveBtn) manualSaveBtn.addEventListener("click",()=>saveToBackend("ManualSave"));
@@ -1625,8 +1674,8 @@ document.addEventListener("DOMContentLoaded",function(){
  const cancelTaskBtn=$("cancelTaskBtn"); if(cancelTaskBtn) cancelTaskBtn.addEventListener("click",cancelTask);
  setupOpenLogButton();
  document.querySelectorAll("input,select,textarea").forEach(e=>{
-  e.addEventListener("input",()=>{sync();calcMinutes();autosave();queueBackendSave();});
-  e.addEventListener("change",()=>{sync();calcMinutes();autosave();queueBackendSave();});
+  e.addEventListener("input",()=>{sync();calcMinutes();autosave();if(!taskClosing) queueBackendSave();});
+  e.addEventListener("change",()=>{sync();calcMinutes();autosave();if(!taskClosing) queueBackendSave();});
  });
 });
 })();
