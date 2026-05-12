@@ -154,6 +154,96 @@ section.card{scroll-margin-top:125px}
 .loadingbox{background:#fff;border-radius:18px;padding:20px;max-width:420px;width:100%;box-shadow:0 15px 50px rgba(0,0,0,.28);border:1px solid var(--line);text-align:center}
 .spinner{width:34px;height:34px;border:4px solid #e5e7eb;border-top-color:#0f172a;border-radius:50%;animation:spin .9s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* Raportti lomakemaiseksi */
+.reportbox{background:var(--bg)!important}
+.reportsection{
+  background:#fff!important;
+  border:1px solid var(--line)!important;
+  border-radius:20px!important;
+  margin:0 0 16px 0!important;
+  box-shadow:0 8px 22px rgba(15,23,42,.05)!important;
+  overflow:hidden!important;
+  page-break-inside:avoid;
+  break-inside:avoid;
+}
+.reporthead{
+  padding:15px 17px!important;
+  color:#fff!important;
+  font-size:22px!important;
+  line-height:1.2;
+}
+.reportbody{padding:16px 17px!important;background:#fff}
+.reportgrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.reportfield{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:11px;
+  background:#fff;
+  min-height:44px;
+}
+.reportfieldlabel{
+  display:block;
+  font-size:13px;
+  font-weight:800;
+  margin-bottom:5px;
+  color:var(--ink);
+}
+.reportfieldvalue{
+  white-space:pre-wrap;
+  word-break:break-word;
+  color:var(--ink);
+}
+.reportfieldvalue.empty{color:#94a3b8}
+.reportsectiontitle{
+  margin:20px 0 10px;
+  font-size:14px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  color:#334155;
+}
+.report-checkline{
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:10px!important;
+  border:1px solid var(--line)!important;
+  border-radius:13px!important;
+  background:var(--soft)!important;
+  padding:10px 11px!important;
+  margin-bottom:8px!important;
+  color:var(--ink)!important;
+}
+.report-checkline.done{background:var(--soft)!important;border-color:var(--line)!important}
+.report-checkline input{width:auto!important;margin-top:3px!important;transform:none!important;accent-color:auto!important}
+.report-table{width:100%;border-collapse:collapse}
+.report-table th,.report-table td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+.report-table th{background:#e5e7eb}
+.reportsection.pagebreak{break-before:page;page-break-before:always}
+.reportsection:first-child{break-before:auto;page-break-before:auto}
+@media(max-width:700px){.reportgrid{grid-template-columns:1fr}.reporthead{font-size:19px!important}}
+@media print{
+  @page{size:A4;margin:12mm}
+  .reportmodal{background:#fff!important}
+  .reportbox{background:#fff!important}
+  .reportsection{
+    box-shadow:none!important;
+    border-radius:0!important;
+    margin:0!important;
+    min-height:auto;
+    page-break-after:always;
+    break-after:page;
+  }
+  .reportsection:last-child{page-break-after:auto;break-after:auto}
+  .reporthead{font-size:18px!important}
+  .reportbody{padding:12px!important}
+  .reportgrid{grid-template-columns:1fr 1fr}
+}
+
 </style>
 </head>
 <body>
@@ -192,7 +282,7 @@ section.card{scroll-margin-top:125px}
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta hallinta clean-ui3-2 final-lock</div>
+<div class="title">VPK UAS – beta hallinta fixed-lists3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -205,9 +295,16 @@ section.card{scroll-margin-top:125px}
 <button id="manualSaveBtn" type="button">Tallenna nyt</button>
 </div>
 </div>
-<datalist id="pilotSuggestions"></datalist>
-<datalist id="observerSuggestions"></datalist>
-<datalist id="ptjSuggestions"></datalist>
+<datalist id="pilotSuggestions">
+  <option value="Kirjoita nimi tähän"></option>
+</datalist>
+<datalist id="observerSuggestions">
+  <option value="Kirjoita nimi tähän"></option>
+</datalist>
+<datalist id="ptjSuggestions">
+  <option value="P33"></option>
+  <option value="P34"></option>
+</datalist>
 <div class="wrap">
 <section class="card" id="start">
 <div class="head start"><h2>Aloita uusi tehtävä</h2></div>
@@ -288,9 +385,9 @@ section.card{scroll-margin-top:125px}
 <div class="field"><label>Päivämäärä</label><input id="date" readonly="" type="date"/></div>
 <div class="field"><label>Kellonaika</label><input id="time" readonly="" type="time"/></div>
 <div class="field"><label>GPS-sijainti</label><input id="riskGps" placeholder="Ei haettu" readonly=""/></div>
-<div class="field"><label>Kauko-ohjaaja</label><input id="pilot" name="vpk-pilot" autocomplete="name" list="pilotSuggestions"/></div>
-<div class="field"><label>Tähystäjä</label><input id="observer" name="vpk-observer" autocomplete="name" list="observerSuggestions"/></div>
-<div class="field"><label>Pel.toim.joht.</label><input id="ptj" name="vpk-ptj" autocomplete="name" list="ptjSuggestions"/></div>
+<div class="field"><label>Kauko-ohjaaja</label><input id="pilot" list="pilotSuggestions" autocomplete="off"/></div>
+<div class="field"><label>Tähystäjä</label><input id="observer" list="observerSuggestions" autocomplete="off"/></div>
+<div class="field"><label>Pel.toim.joht.</label><input id="ptj" list="ptjSuggestions" autocomplete="off" value="P33"/></div>
 </div>
 <div class="sectiontitle">Lentotehtävä</div>
 <div class="grid2">
@@ -1032,9 +1129,6 @@ async function finishTask(){
    sync();
    calcMinutes();
    calcRisk();
-   storeName("vpk_names_pilot", val("pilot"));
-   storeName("vpk_names_observer", val("observer"));
-   storeName("vpk_names_ptj", val("ptj"));
    autosave();
 
    currentTaskStatus = "Valmis";
@@ -1086,9 +1180,6 @@ async function cancelTask(){
    sync();
    calcMinutes();
    calcRisk();
-   storeName("vpk_names_pilot", val("pilot"));
-   storeName("vpk_names_observer", val("observer"));
-   storeName("vpk_names_ptj", val("ptj"));
    autosave();
 
    currentTaskStatus = "Keskeytetty";
@@ -1349,7 +1440,11 @@ function nonEmpty(v){
 }
 
 function fieldRow(label, value){
- return `<div class="reportkey">${escHtml(label)}</div><div class="reportval">${nonEmpty(value) ? escHtml(value) : '<span class="report-empty">-</span>'}</div>`;
+ const empty = !nonEmpty(value);
+ return `<div class="reportfield">
+   <div class="reportfieldlabel">${escHtml(label)}</div>
+   <div class="reportfieldvalue ${empty ? "empty" : ""}">${empty ? "-" : escHtml(value)}</div>
+ </div>`;
 }
 
 function checkLine(label, value){
@@ -1381,7 +1476,7 @@ function riskCard(label, value, score){
 
 function section(title, inner, subtitle, type){
  const cls = type || "";
- return `<div class="reportsection">
+ return `<div class="reportsection pagebreak">
    <div class="reporthead ${cls}">${escHtml(title)}</div>
    <div class="reportbody">${subtitle ? `<div class="report-subtitle">${escHtml(subtitle)}</div>` : ""}${inner || "<div>Ei tietoja.</div>"}</div>
  </div>`;
@@ -1400,7 +1495,7 @@ function renderExtraFields(data, usedKeys){
    if(used[k]) return;
    rows += fieldRow(labelize(k), data[k]);
  });
- return rows ? `<div class="sectiontitle">Muut tiedot</div>${grid(rows)}` : "";
+ return rows ? `<div class="reportsectiontitle">Muut tiedot</div>${grid(rows)}` : "";
 }
 
 function renderTaskSummary(data){
@@ -1731,30 +1826,7 @@ window.reopenTask = reopenTask;
 window.loadTasks = loadTasks;
 
 
-function getStoredNames(key){
- try{return JSON.parse(localStorage.getItem(key)||"[]");}catch(e){return [];}
-}
-function storeName(key,value){
- const name=String(value||"").trim(); if(!name) return;
- try{
-  let list=getStoredNames(key).filter(x=>String(x).trim().toLowerCase()!==name.toLowerCase());
-  list.unshift(name); list=list.slice(0,20);
-  localStorage.setItem(key,JSON.stringify(list));
- }catch(e){}
-}
-function fillNameDatalist(datalistId,key){
- const dl=$(datalistId); if(!dl) return;
- dl.innerHTML=getStoredNames(key).map(n=>`<option value="${escHtml(n)}"></option>`).join("");
-}
-function setupNameSuggestions(){
- fillNameDatalist("pilotSuggestions","vpk_names_pilot");
- fillNameDatalist("observerSuggestions","vpk_names_observer");
- fillNameDatalist("ptjSuggestions","vpk_names_ptj");
- [["pilot","vpk_names_pilot","pilotSuggestions"],["observer","vpk_names_observer","observerSuggestions"],["ptj","vpk_names_ptj","ptjSuggestions"]].forEach(([id,key,dl])=>{
-  const el=$(id); if(!el) return;
-  ["change","blur"].forEach(ev=>el.addEventListener(ev,()=>{storeName(key,el.value);fillNameDatalist(dl,key);}));
- });
-}
+
 
 function setVal(id, value){
  const el = $(id);
@@ -1965,8 +2037,8 @@ async function reopenTask(tehtavaNimi){
 }
 
 document.addEventListener("DOMContentLoaded",function(){
- const today=new Date().toISOString().slice(0,10); $("startDate").value=today; if($("startTime") && !$("startTime").value) $("startTime").value=currentTimeHHMM();
-  calcRisk(); updateName(); checkRecovery(); setupNameSuggestions();
+ const today=new Date().toISOString().slice(0,10); $("startDate").value=today; if($("startTime") && !$("startTime").value) $("startTime").value=currentTimeHHMM(); if($("ptj") && !$("ptj").value) $("ptj").value="P33";
+  calcRisk(); updateName(); checkRecovery();
  $("startBtn").addEventListener("click",startTask);
  $("gpsBtn").addEventListener("click",getGps);
  document.querySelectorAll("#riskRows select").forEach(s=>{
