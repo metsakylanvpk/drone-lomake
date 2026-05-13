@@ -389,6 +389,60 @@ button.secondary,.btn.secondary{
 }
 .multitag input{width:auto}
 
+
+/* Monivalinta pudotusvalikossa */
+.multiDropdown{position:relative}
+.multiDisplay{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:11px 44px 11px 11px;
+  background:#fff;
+  color:var(--ink);
+  font:inherit;
+  text-align:left;
+  min-height:44px;
+}
+.multiToggle{
+  position:absolute;
+  right:4px;
+  top:4px;
+  bottom:4px;
+  width:36px;
+  padding:0!important;
+  border-radius:10px!important;
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+}
+.multiMenu{
+  position:absolute;
+  z-index:60;
+  left:0;
+  right:0;
+  top:calc(100% + 4px);
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:12px;
+  box-shadow:0 8px 24px rgba(15,23,42,.15);
+  max-height:270px;
+  overflow:auto;
+  display:none;
+  padding:6px;
+}
+.multiMenu.open{display:block}
+.multiMenu label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 10px;
+  border-radius:10px;
+  cursor:pointer;
+}
+.multiMenu label:hover{background:#f8fafc}
+.multiMenu input{width:auto}
+.multiwrap{display:none!important}
+
 </style>
 </head>
 <body>
@@ -427,7 +481,7 @@ button.secondary,.btn.secondary{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta hallinta multicheck3-2 final-lock</div>
+<div class="title">VPK UAS – beta hallinta dropdowns-weather3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -522,16 +576,18 @@ button.secondary,.btn.secondary{
 <div class="field"><label>Paikka</label><input id="place" readonly=""/></div>
 <div class="field"><label>Päivämäärä</label><input id="date" readonly="" type="date"/></div>
 <div class="field"><label>Kellonaika</label><input id="time" readonly="" type="time"/></div>
-<div class="field"><label>GPS-sijainti</label><input id="riskGps" placeholder="Ei haettu" readonly=""/><button type="button" class="secondary timebtn" id="riskGpsBtn">Hae GPS-sijainti</button></div>
+<div class="field"><label>GPS-sijainti</label><input id="riskGps" placeholder="Ei haettu" readonly=""/><button type="button" class="secondary timebtn" id="riskGpsBtn">Hae GPS-sijainti</button><div class="notice" style="margin-top:8px">
+GPS-haulla täytetään sijainti riskinarviointiin, lentosuunnitelmaan ja lentopäiväkirjaan. Samalla yritetään hakea lämpötila ja tuuli automaattisesti lähimmän säädatan perusteella; arvot voi silti korjata käsin. Flyk.com-linkki avaa ilman GPS:ää yleisen drone-kartan ja GPS:n jälkeen suoraan tehtävän sijaintiin.
+</div></div>
 <div class="field"><label>Kauko-ohjaaja</label><div class="comboWrap">
   <input id="pilot" autocomplete="off"/>
   <button type="button" class="comboBtn" data-combo="pilot">▾</button>
-  <div class="comboMenu" id="pilotMenu"><div class="comboItem" data-value="Arto Laitila">Arto Laitila</div><div class="comboItem" data-value="Eppu Santala">Eppu Santala</div><div class="comboItem" data-value="J-P Huttunen">J-P Huttunen</div><div class="comboItem" data-value="Kai Paukkunen">Kai Paukkunen</div><div class="comboItem" data-value="Mika Zeng">Mika Zeng</div><div class="comboItem" data-value="Ricardo Battilana">Ricardo Battilana</div><div class="comboItem" data-value="Santtu Kolari">Santtu Kolari</div><div class="comboItem" data-value="Tomi Raekannas">Tomi Raekannas</div><div class="comboItem" data-value="Vesa Ahonen">Vesa Ahonen</div></div>
+  <div class="comboMenu" id="pilotMenu"><div class="comboItem" data-value="Ahonen Vesa">Ahonen Vesa</div><div class="comboItem" data-value="Battilana Ricardo">Battilana Ricardo</div><div class="comboItem" data-value="Huttunen J-P">Huttunen J-P</div><div class="comboItem" data-value="Kolari Santtu">Kolari Santtu</div><div class="comboItem" data-value="Laitila Arto">Laitila Arto</div><div class="comboItem" data-value="Paukkunen Kai">Paukkunen Kai</div><div class="comboItem" data-value="Raekannas Tomi">Raekannas Tomi</div><div class="comboItem" data-value="Santala Eppu">Santala Eppu</div><div class="comboItem" data-value="Zeng Mika">Zeng Mika</div></div><div class="comboItem" data-value="Eppu Santala">Eppu Santala</div><div class="comboItem" data-value="J-P Huttunen">J-P Huttunen</div><div class="comboItem" data-value="Kai Paukkunen">Kai Paukkunen</div><div class="comboItem" data-value="Mika Zeng">Mika Zeng</div><div class="comboItem" data-value="Ricardo Battilana">Ricardo Battilana</div><div class="comboItem" data-value="Santtu Kolari">Santtu Kolari</div><div class="comboItem" data-value="Tomi Raekannas">Tomi Raekannas</div><div class="comboItem" data-value="Vesa Ahonen">Vesa Ahonen</div></div>
 </div></div>
 <div class="field"><label>Tähystäjä</label><div class="comboWrap">
   <input id="observer" autocomplete="off"/>
   <button type="button" class="comboBtn" data-combo="observer">▾</button>
-  <div class="comboMenu" id="observerMenu"><div class="comboItem" data-value="Arto Laitila">Arto Laitila</div><div class="comboItem" data-value="Eppu Santala">Eppu Santala</div><div class="comboItem" data-value="J-P Huttunen">J-P Huttunen</div><div class="comboItem" data-value="Kai Paukkunen">Kai Paukkunen</div><div class="comboItem" data-value="Mika Zeng">Mika Zeng</div><div class="comboItem" data-value="Ricardo Battilana">Ricardo Battilana</div><div class="comboItem" data-value="Santtu Kolari">Santtu Kolari</div><div class="comboItem" data-value="Tomi Raekannas">Tomi Raekannas</div><div class="comboItem" data-value="Vesa Ahonen">Vesa Ahonen</div></div>
+  <div class="comboMenu" id="observerMenu"><div class="comboItem" data-value="Ahonen Vesa">Ahonen Vesa</div><div class="comboItem" data-value="Battilana Ricardo">Battilana Ricardo</div><div class="comboItem" data-value="Huttunen J-P">Huttunen J-P</div><div class="comboItem" data-value="Kolari Santtu">Kolari Santtu</div><div class="comboItem" data-value="Laitila Arto">Laitila Arto</div><div class="comboItem" data-value="Paukkunen Kai">Paukkunen Kai</div><div class="comboItem" data-value="Raekannas Tomi">Raekannas Tomi</div><div class="comboItem" data-value="Santala Eppu">Santala Eppu</div><div class="comboItem" data-value="Zeng Mika">Zeng Mika</div></div><div class="comboItem" data-value="Eppu Santala">Eppu Santala</div><div class="comboItem" data-value="J-P Huttunen">J-P Huttunen</div><div class="comboItem" data-value="Kai Paukkunen">Kai Paukkunen</div><div class="comboItem" data-value="Mika Zeng">Mika Zeng</div><div class="comboItem" data-value="Ricardo Battilana">Ricardo Battilana</div><div class="comboItem" data-value="Santtu Kolari">Santtu Kolari</div><div class="comboItem" data-value="Tomi Raekannas">Tomi Raekannas</div><div class="comboItem" data-value="Vesa Ahonen">Vesa Ahonen</div></div>
 </div></div>
 <div class="field"><label>Pel.toim.joht.</label><div class="comboWrap">
   <input id="ptj" autocomplete="off"/>
@@ -552,19 +608,35 @@ button.secondary,.btn.secondary{
 <div class="inlinechecks"><label><input id="aviamaps" type="checkbox"/> <a id="flykLink" href="https://flyk.com/map?drone&lang=fi" rel="noopener" target="_blank">Flyk.com</a></label><label><input id="ais" type="checkbox"/> <a href="https://ais.fi/" rel="noopener" target="_blank">AIS.fi (NOTAM)</a></label><label><input id="weatherproof" type="checkbox"/> <a href="https://drone.weatherproof.fi/" rel="noopener" target="_blank">Drone.weatherproof.fi</a></label></div>
 <div class="grid2">
 <div class="field"><label>Näkö- ja lentoesteet</label>
-<div class="multiwrap"><label class="multitag"><input type="checkbox" class="multiCheck" data-target="obstacles" value="Ei" checked/> Ei</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="obstacles" value="Puut" /> Puut</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="obstacles" value="Sähkölinjat" /> Sähkölinjat</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="obstacles" value="Mastot" /> Mastot</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="obstacles" value="Rakennukset" /> Rakennukset</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="obstacles" value="Savu/näkyvyyseste" /> Savu/näkyvyyseste</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="obstacles" value="Maastoesteet" /> Maastoesteet</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="obstacles" value="Muu" /> Muu</label></div>
+<div class="multiDropdown" data-target="obstacles">
+  <button type="button" class="multiDisplay" id="obstaclesDisplay">Ei</button>
+  <button type="button" class="multiToggle" data-multitoggle="obstacles">▾</button>
+  <div class="multiMenu" id="obstaclesMenu"><label><input type="checkbox" class="multiCheck" data-target="obstacles" value="Ei" checked/> Ei</label><label><input type="checkbox" class="multiCheck" data-target="obstacles" value="Puut" /> Puut</label><label><input type="checkbox" class="multiCheck" data-target="obstacles" value="Sähkölinjat" /> Sähkölinjat</label><label><input type="checkbox" class="multiCheck" data-target="obstacles" value="Mastot" /> Mastot</label><label><input type="checkbox" class="multiCheck" data-target="obstacles" value="Rakennukset" /> Rakennukset</label><label><input type="checkbox" class="multiCheck" data-target="obstacles" value="Savu/näkyvyyseste" /> Savu/näkyvyyseste</label><label><input type="checkbox" class="multiCheck" data-target="obstacles" value="Maastoesteet" /> Maastoesteet</label><label><input type="checkbox" class="multiCheck" data-target="obstacles" value="Muu" /> Muu</label></div>
+</div>
 <input id="obstacles" type="hidden" value="Ei"/>
 </div>
 <div class="field"><label>Ihmisjoukko</label>
-<div class="multiwrap"><label class="multitag"><input type="checkbox" class="multiCheck" data-target="crowd" value="Ei" checked/> Ei</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="crowd" value="Yksittäisiä henkilöitä" /> Yksittäisiä henkilöitä</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="crowd" value="Liikennettä lähellä" /> Liikennettä lähellä</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="crowd" value="Yleisöä/ihmisjoukko" /> Yleisöä/ihmisjoukko</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="crowd" value="Pelastushenkilöstöä alueella" /> Pelastushenkilöstöä alueella</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="crowd" value="Muu" /> Muu</label></div>
+<div class="multiDropdown" data-target="crowd">
+  <button type="button" class="multiDisplay" id="crowdDisplay">Ei</button>
+  <button type="button" class="multiToggle" data-multitoggle="crowd">▾</button>
+  <div class="multiMenu" id="crowdMenu"><label><input type="checkbox" class="multiCheck" data-target="crowd" value="Ei" checked/> Ei</label><label><input type="checkbox" class="multiCheck" data-target="crowd" value="Yksittäisiä henkilöitä" /> Yksittäisiä henkilöitä</label><label><input type="checkbox" class="multiCheck" data-target="crowd" value="Liikennettä lähellä" /> Liikennettä lähellä</label><label><input type="checkbox" class="multiCheck" data-target="crowd" value="Yleisöä/ihmisjoukko" /> Yleisöä/ihmisjoukko</label><label><input type="checkbox" class="multiCheck" data-target="crowd" value="Pelastushenkilöstöä alueella" /> Pelastushenkilöstöä alueella</label><label><input type="checkbox" class="multiCheck" data-target="crowd" value="Muu" /> Muu</label></div>
+</div>
 <input id="crowd" type="hidden" value="Ei"/>
 </div>
 <div class="field"><label>Vesistöt</label>
-<div class="multiwrap"><label class="multitag"><input type="checkbox" class="multiCheck" data-target="waters" value="Ei" checked/> Ei</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="waters" value="Oja/puro" /> Oja/puro</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="waters" value="Järvi/lampi" /> Järvi/lampi</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="waters" value="Joki" /> Joki</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="waters" value="Ranta-alue" /> Ranta-alue</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="waters" value="Jäätynyt/luminen vesistö" /> Jäätynyt/luminen vesistö</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="waters" value="Muu" /> Muu</label></div>
+<div class="multiDropdown" data-target="waters">
+  <button type="button" class="multiDisplay" id="watersDisplay">Ei</button>
+  <button type="button" class="multiToggle" data-multitoggle="waters">▾</button>
+  <div class="multiMenu" id="watersMenu"><label><input type="checkbox" class="multiCheck" data-target="waters" value="Ei" checked/> Ei</label><label><input type="checkbox" class="multiCheck" data-target="waters" value="Oja/puro" /> Oja/puro</label><label><input type="checkbox" class="multiCheck" data-target="waters" value="Järvi/lampi" /> Järvi/lampi</label><label><input type="checkbox" class="multiCheck" data-target="waters" value="Joki" /> Joki</label><label><input type="checkbox" class="multiCheck" data-target="waters" value="Ranta-alue" /> Ranta-alue</label><label><input type="checkbox" class="multiCheck" data-target="waters" value="Jäätynyt/luminen vesistö" /> Jäätynyt/luminen vesistö</label><label><input type="checkbox" class="multiCheck" data-target="waters" value="Muu" /> Muu</label></div>
+</div>
 <input id="waters" type="hidden" value="Ei"/>
 </div>
 <div class="field"><label>Signaalihäiriöt</label>
-<div class="multiwrap"><label class="multitag"><input type="checkbox" class="multiCheck" data-target="signal" value="Ei" checked/> Ei</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="signal" value="Sähkölinjat" /> Sähkölinjat</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="signal" value="Mastot/antennit" /> Mastot/antennit</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="signal" value="Rakennukset" /> Rakennukset</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="signal" value="Metsä/maasto" /> Metsä/maasto</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="signal" value="Ajoneuvot/kalusto" /> Ajoneuvot/kalusto</label><label class="multitag"><input type="checkbox" class="multiCheck" data-target="signal" value="Muu" /> Muu</label></div>
+<div class="multiDropdown" data-target="signal">
+  <button type="button" class="multiDisplay" id="signalDisplay">Ei</button>
+  <button type="button" class="multiToggle" data-multitoggle="signal">▾</button>
+  <div class="multiMenu" id="signalMenu"><label><input type="checkbox" class="multiCheck" data-target="signal" value="Ei" checked/> Ei</label><label><input type="checkbox" class="multiCheck" data-target="signal" value="Sähkölinjat" /> Sähkölinjat</label><label><input type="checkbox" class="multiCheck" data-target="signal" value="Mastot/antennit" /> Mastot/antennit</label><label><input type="checkbox" class="multiCheck" data-target="signal" value="Rakennukset" /> Rakennukset</label><label><input type="checkbox" class="multiCheck" data-target="signal" value="Metsä/maasto" /> Metsä/maasto</label><label><input type="checkbox" class="multiCheck" data-target="signal" value="Ajoneuvot/kalusto" /> Ajoneuvot/kalusto</label><label><input type="checkbox" class="multiCheck" data-target="signal" value="Muu" /> Muu</label></div>
+</div>
 <input id="signal" type="hidden" value="Ei"/>
 </div>
 </div>
@@ -751,7 +823,7 @@ button.secondary,.btn.secondary{
 <div class="sectiontitle">Lentokorkeudet</div>
 <div class="summary"><div><strong>Maksimi lentokorkeus:</strong> <span id="planMaxAlt">-</span></div><div><strong>Minimi lentokorkeus:</strong> <span id="planMinAlt">-</span></div></div>
 <div class="sectiontitle">Lennätyspaikka ja varalaskupaikat</div>
-<div class="notice">GPS haetaan vasta tehtäväpaikalla. Kun painat “Hae GPS-sijainti”, sama sijainti täyttyy lähtö- ja laskupaikan lisätiedoksi sekä lentopäiväkirjaan.</div>
+<div class="notice">GPS voidaan hakea riskinarvioinnissa tai lentosuunnitelmassa. Sama sijainti täyttyy lähtö- ja laskupaikan lisätiedoksi sekä lentopäiväkirjaan. Flyk.com-linkki avaa ilman GPS:ää yleisen drone-kartan ja GPS:n jälkeen suoraan tehtävän sijaintiin. GPS-haun jälkeen lämpötila ja tuuli haetaan automaattisesti lähimmän säädatan perusteella, mutta ne voi korjata käsin.</div>
 <div style="margin-bottom:10px">
 <button id="gpsBtn" type="button">Hae GPS-sijainti</button>
 <span class="subtle" id="gpsStatus" style="margin-left:8px"></span>
@@ -959,7 +1031,7 @@ function startTask(){
  $("startError").classList.add("hidden");
  $("date").value=val("startDate"); $("time").value=val("startTime"); $("place").value=val("startPlace"); if($("startAircraft") && $("aircraft")) $("aircraft").value=val("startAircraft");
  currentTaskName = buildTaskName();
- sync(); updateFlykLink(); autosave(); saveLastTaskKey(); saveToBackend("StartTask"); location.hash="#risk";
+ sync(); updateFlykLink(); autosave(); fetchWeatherForGps(gps); saveLastTaskKey(); saveToBackend("StartTask"); location.hash="#risk";
 }
 function done(){
  $("chkRiskPlan").checked=true;
@@ -967,6 +1039,34 @@ function done(){
  saveToBackend("ManualSave");
  setTimeout(()=>{ location.hash="#checklist"; },50);
 }
+
+async function fetchWeatherForGps(gps){
+ try{
+   const parts = String(gps||"").split(",");
+   if(parts.length < 2) return;
+   const lat = parseFloat(parts[0]);
+   const lon = parseFloat(parts[1]);
+   if(isNaN(lat) || isNaN(lon)) return;
+
+   setSaveStatus("Haetaan säädataa GPS-sijainnille...", "wait");
+
+   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(6)}&longitude=${lon.toFixed(6)}&current=temperature_2m,wind_speed_10m&wind_speed_unit=ms&timezone=auto`;
+   const res = await fetch(url);
+   const data = await res.json();
+
+   if(data && data.current){
+     if($("temp") && data.current.temperature_2m !== undefined) $("temp").value = Math.round(Number(data.current.temperature_2m));
+     if($("wind") && data.current.wind_speed_10m !== undefined) $("wind").value = Number(data.current.wind_speed_10m).toFixed(1);
+     sync();
+     autosave();
+     if(!taskClosing) queueBackendSave();
+     setSaveStatus("GPS ja säädata haettu", "ok");
+   }
+ }catch(e){
+   setSaveStatus("GPS haettu, mutta säädataa ei saatu automaattisesti", "wait");
+ }
+}
+
 function getGps(){
  const status=$("gpsStatus");
  if(status) status.textContent="Haetaan GPS-sijaintia..."; setSaveStatus("Haetaan GPS-sijaintia...", "wait");
@@ -2033,6 +2133,19 @@ function setVal(id, value){
  el.value = value == null ? "" : value;
 }
 
+
+function setMultiValue(targetId, value){
+ const valText = String(value || "Ei");
+ const vals = valText.split(";").map(s=>s.trim()).filter(Boolean);
+ const finalVals = vals.length ? vals : ["Ei"];
+ document.querySelectorAll(`.multiCheck[data-target="${targetId}"]`).forEach(cb=>{
+   cb.checked = finalVals.includes(cb.value);
+ });
+ const hidden = $(targetId);
+ if(hidden) hidden.value = finalVals.join("; ");
+ updateMultiDisplay(targetId);
+}
+
 function setChk(id, value){
  const el = $(id);
  if(!el) return;
@@ -2120,10 +2233,14 @@ function loadReportToForm(report){
  setChk("aviamaps", r.AviamapsTarkistettu);
  setChk("ais", r.AisNotamTarkistettu);
  setChk("weatherproof", r.DroneWeatherproofTarkistettu);
- setVal("obstacles", r.NakoJaLentoesteet || "");
- setVal("crowd", r.Ihmisjoukko || "");
- setVal("waters", r.Vesistot || "");
- setVal("signal", r.Signaalihairiot || "");
+ setVal("obstacles", r.NakoJaLentoesteet || "Ei");
+ setMultiValue("obstacles", r.NakoJaLentoesteet || "Ei");
+ setVal("crowd", r.Ihmisjoukko || "Ei");
+ setMultiValue("crowd", r.Ihmisjoukko || "Ei");
+ setVal("waters", r.Vesistot || "Ei");
+ setMultiValue("waters", r.Vesistot || "Ei");
+ setVal("signal", r.Signaalihairiot || "Ei");
+ setMultiValue("signal", r.Signaalihairiot || "Ei");
  setVal("temp", r.Lampotila || "");
  setVal("wind", r.Tuuli || "");
  setVal("rain", r.SadeSumu || "Ei");
@@ -2326,8 +2443,7 @@ function setupChecklistSelectAll(){
 
      if(
        id === "clAuto03" || id === "clAuto04" || id === "clAuto05" || id === "clAuto06" ||
-       id === "clAuto30" || id === "clAuto31" || id === "clAuto32" || id === "clAuto33" ||
-       id === "chkRiskPlan"
+       id === "clAuto30" || id === "clAuto31" || id === "clAuto32" || id === "clAuto33"
      ){
        return;
      }
@@ -2340,7 +2456,45 @@ function setupChecklistSelectAll(){
  });
 }
 
+
+function updateMultiDisplay(targetId){
+ const hidden = $(targetId);
+ const display = $(targetId + "Display");
+ if(display && hidden) display.textContent = hidden.value || "Ei";
+}
+
 function setupMultiChecks(){
+ function closeMenus(except){
+   document.querySelectorAll(".multiMenu").forEach(m=>{
+     if(m.id !== except) m.classList.remove("open");
+   });
+ }
+
+ document.querySelectorAll("[data-multitoggle]").forEach(btn=>{
+   btn.addEventListener("click",(ev)=>{
+     ev.preventDefault();
+     ev.stopPropagation();
+     const target = btn.dataset.multitoggle;
+     const menu = $(target + "Menu");
+     if(!menu) return;
+     closeMenus(menu.id);
+     menu.classList.toggle("open");
+   });
+ });
+
+ document.querySelectorAll(".multiDisplay").forEach(btn=>{
+   btn.addEventListener("click",(ev)=>{
+     ev.preventDefault();
+     ev.stopPropagation();
+     const wrap = btn.closest(".multiDropdown");
+     const target = wrap ? wrap.dataset.target : "";
+     const menu = $(target + "Menu");
+     if(!menu) return;
+     closeMenus(menu.id);
+     menu.classList.toggle("open");
+   });
+ });
+
  document.querySelectorAll(".multiCheck").forEach(cb=>{
    cb.addEventListener("change", ()=>{
      const targetId = cb.dataset.target;
@@ -2350,9 +2504,7 @@ function setupMultiChecks(){
      const related = [...document.querySelectorAll(`.multiCheck[data-target="${targetId}"]`)];
 
      if(cb.value === "Ei" && cb.checked){
-       related.forEach(r=>{
-         if(r !== cb) r.checked = false;
-       });
+       related.forEach(r=>{ if(r !== cb) r.checked = false; });
      }else if(cb.value !== "Ei" && cb.checked){
        const none = related.find(r=>r.value === "Ei");
        if(none) none.checked = false;
@@ -2370,12 +2522,17 @@ function setupMultiChecks(){
        hidden.value = vals.join("; ");
      }
 
+     updateMultiDisplay(targetId);
      sync();
      autosave();
      if(!taskClosing) queueBackendSave();
    });
  });
+
+ ["obstacles","crowd","waters","signal"].forEach(updateMultiDisplay);
+ document.addEventListener("click",()=>closeMenus(""));
 }
+
 
 document.addEventListener("DOMContentLoaded",function(){
  const today=new Date().toISOString().slice(0,10); $("startDate").value=today; if($("startTime") && !$("startTime").value) $("startTime").value=currentTimeHHMM(); if($("ptj") && !$("ptj").value) $("ptj").value="P33";
