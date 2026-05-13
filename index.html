@@ -375,14 +375,6 @@ button.secondary,.btn.secondary{
 .comboItem:last-child{border-bottom:none}
 .comboItem:hover{background:#f8fafc}
 
-
-/* Korjaus: kaikki napit samaa mustaa tyyliä */
-button.secondary,.btn.secondary,.timebtn,.comboBtn{
-  background:var(--primary)!important;
-  color:#fff!important;
-  border:none!important;
-}
-
 </style>
 </head>
 <body>
@@ -421,7 +413,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta rollback-clean3-2 final-lock</div>
+<div class="title">VPK UAS – beta stable-clean3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -455,6 +447,9 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 <section class="card" id="checklist">
 <div class="head check"><h2>TARKASTUSLISTA – PELASTUSTOIMEN UAS-TOIMINTA</h2></div>
 <div class="body">
+<div style="margin-bottom:12px">
+<button type="button" id="selectAllChecklistBtn">Valitse kaikki tarkistuslistan kohdat</button>
+</div>
 <div class="sectiontitle">ENNEN LENNON ALOITTAMISTA:</div>
 <label class="checkline"><input id="chkRiskPlan" type="checkbox"/><span>Kirjallinen riskinarviointi ja lentosuunnitelma (lomakkeen täyttö)</span></label>
 <label class="checkline"><input id="clAuto01" type="checkbox"/><span>Nousu- ja laskupaikan perustaminen</span></label>
@@ -542,10 +537,10 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 <div class="sectiontitle">Lentoalueen ennakkotiedustelu</div>
 <div class="inlinechecks"><label><input id="aviamaps" type="checkbox"/> <a id="flykLink" href="https://flyk.com/map?drone&lang=fi" rel="noopener" target="_blank">Flyk.com</a></label><label><input id="ais" type="checkbox"/> <a href="https://ais.fi/" rel="noopener" target="_blank">AIS.fi (NOTAM)</a></label><label><input id="weatherproof" type="checkbox"/> <a href="https://drone.weatherproof.fi/" rel="noopener" target="_blank">Drone.weatherproof.fi</a></label></div>
 <div class="grid2">
-<div class="field"><label>Näkö- ja lentoesteet</label><input id="obstacles" value="Ei"/></div>
-<div class="field"><label>Ihmisjoukko</label><input id="crowd" value="Ei"/></div>
-<div class="field"><label>Vesistöt</label><input id="waters" value="Ei"/></div>
-<div class="field"><label>Signaalihäiriöt</label><input id="signal" value="Ei"/></div>
+<div class="field"><label>Näkö- ja lentoesteet</label><input id="obstacles"/></div>
+<div class="field"><label>Ihmisjoukko</label><input id="crowd"/></div>
+<div class="field"><label>Vesistöt</label><input id="waters"/></div>
+<div class="field"><label>Signaalihäiriöt</label><input id="signal"/></div>
 </div>
 <div class="sectiontitle">Sää lennätyspaikalla</div>
 <div class="grid2">
@@ -2179,6 +2174,7 @@ function loadReportToForm(report){
  setupOpenLogButton();
  setupTimeButtons();
  setupComboBoxes();
+ setupChecklistSelectAll();
  activateLoadedTask(currentTaskName);
 }
 
@@ -2292,6 +2288,31 @@ function setupComboBoxes(){
  document.addEventListener("click",()=>closeAll(""));
 }
 
+
+function setupChecklistSelectAll(){
+ const btn = $("selectAllChecklistBtn");
+ if(!btn) return;
+
+ btn.addEventListener("click", ()=>{
+   document.querySelectorAll("#checklist input[type='checkbox']").forEach(cb=>{
+     const id = cb.id || "";
+
+     // Ei valita ilmoituksia alussa/lopussa. GO/NO GO on radio, ei checkbox.
+     if(
+       id === "clAuto03" || id === "clAuto04" || id === "clAuto05" || id === "clAuto06" ||
+       id === "clAuto30" || id === "clAuto31" || id === "clAuto32" || id === "clAuto33"
+     ){
+       return;
+     }
+
+     cb.checked = true;
+   });
+
+   autosave();
+   if(!taskClosing) queueBackendSave();
+ });
+}
+
 document.addEventListener("DOMContentLoaded",function(){
  const today=new Date().toISOString().slice(0,10); $("startDate").value=today; if($("startTime") && !$("startTime").value) $("startTime").value=currentTimeHHMM(); if($("ptj") && !$("ptj").value) $("ptj").value="P33";
   calcRisk(); updateName(); checkRecovery();
@@ -2320,6 +2341,7 @@ document.addEventListener("DOMContentLoaded",function(){
  setupOpenLogButton();
  setupTimeButtons();
  setupComboBoxes();
+ setupChecklistSelectAll();
  document.querySelectorAll("input,select,textarea").forEach(e=>{
   e.addEventListener("input",()=>{sync();calcMinutes();autosave();if(!taskClosing) queueBackendSave();});
   e.addEventListener("change",()=>{sync();calcMinutes();autosave();if(!taskClosing) queueBackendSave();});
