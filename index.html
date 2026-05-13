@@ -244,6 +244,88 @@ section.card{scroll-margin-top:125px}
   .reportgrid{grid-template-columns:1fr 1fr}
 }
 
+
+/* Raportti: sama ulkoasu kuin täytettävässä lomakkeessa */
+.reportmodal{background:rgba(15,23,42,.72)}
+.reportbox{background:var(--bg)!important;border-radius:18px!important;max-width:1050px!important}
+.reporttop{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:14px}
+.reportsection{
+  background:#fff!important;
+  border:1px solid var(--line)!important;
+  border-radius:20px!important;
+  margin-bottom:16px!important;
+  box-shadow:0 8px 22px rgba(15,23,42,.05)!important;
+  overflow:hidden!important;
+}
+.reporthead{
+  padding:15px 17px!important;
+  color:#fff!important;
+  font-size:22px!important;
+  font-weight:900!important;
+  line-height:1.2!important;
+}
+.reporthead.task{background:#111827!important}
+.reporthead.check{background:#374151!important}
+.reporthead.risk{background:#9a3412!important}
+.reporthead.plan{background:#0f766e!important}
+.reporthead.log{background:#1e3a8a!important}
+.reportbody{padding:16px 17px!important;background:#fff!important}
+.reportgrid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important}
+.reportfield{display:block!important;border:none!important;border-radius:0!important;padding:0!important;background:transparent!important;min-height:0!important}
+.reportfieldlabel{display:block!important;font-size:13px!important;font-weight:800!important;margin-bottom:5px!important;color:var(--ink)!important}
+.reportfieldvalue{
+  width:100%!important;
+  border:1px solid var(--line)!important;
+  border-radius:12px!important;
+  padding:11px!important;
+  background:#fff!important;
+  color:var(--ink)!important;
+  min-height:44px!important;
+  white-space:pre-wrap!important;
+  word-break:break-word!important;
+}
+.reportfieldvalue.empty{background:#f3f4f6!important;color:#94a3b8!important}
+.reportsectiontitle{
+  margin:20px 0 10px!important;
+  font-size:14px!important;
+  font-weight:900!important;
+  text-transform:uppercase!important;
+  letter-spacing:.04em!important;
+  color:#334155!important;
+}
+.report-checkline{
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:10px!important;
+  border:1px solid var(--line)!important;
+  border-radius:13px!important;
+  background:var(--soft)!important;
+  padding:10px 11px!important;
+  margin-bottom:8px!important;
+  color:var(--ink)!important;
+}
+.report-checkline input{width:auto!important;margin-top:3px!important;transform:none!important;accent-color:auto!important}
+.report-table{width:100%;border-collapse:collapse}
+.report-table th,.report-table td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+.report-table th{background:#e5e7eb}
+@media(max-width:850px){.reportgrid{grid-template-columns:1fr!important}.reporthead{font-size:19px!important}}
+@media print{
+  @page{size:A4;margin:12mm}
+  body>*:not(.reportmodal){display:none!important}
+  .reportmodal{position:static!important;display:block!important;background:#fff!important;padding:0!important;overflow:visible!important}
+  .reportbox{max-width:none!important;border:none!important;border-radius:0!important;background:#fff!important;padding:0!important}
+  .reporttop button{display:none!important}
+  .reportsection{box-shadow:none!important;break-after:page;page-break-after:always;margin:0!important;border-radius:0!important}
+  .reportsection:last-child{break-after:auto;page-break-after:auto}
+  .reportgrid{grid-template-columns:1fr 1fr!important}
+}
+
+
+.timebtn{padding:9px 10px;border-radius:11px;font-size:12px;margin-top:6px}
+.timefieldwrap{display:flex;gap:6px;align-items:center}
+.timefieldwrap input{flex:1}
+@media(max-width:850px){.timefieldwrap{display:block}.timebtn{width:100%;margin-top:6px}}
+
 </style>
 </head>
 <body>
@@ -282,7 +364,7 @@ section.card{scroll-margin-top:125px}
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta hallinta fixed-lists-23-2 final-lock</div>
+<div class="title">VPK UAS – beta hallinta flyk-gps3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -382,7 +464,7 @@ section.card{scroll-margin-top:125px}
 <div class="field"><label>Paikka</label><input id="place" readonly=""/></div>
 <div class="field"><label>Päivämäärä</label><input id="date" readonly="" type="date"/></div>
 <div class="field"><label>Kellonaika</label><input id="time" readonly="" type="time"/></div>
-<div class="field"><label>GPS-sijainti</label><input id="riskGps" placeholder="Ei haettu" readonly=""/></div>
+<div class="field"><label>GPS-sijainti</label><input id="riskGps" placeholder="Ei haettu" readonly=""/><button type="button" class="secondary timebtn" id="riskGpsBtn">Hae GPS-sijainti</button></div>
 <div class="field"><label>Kauko-ohjaaja</label><input id="pilot" list="pilotSuggestions" autocomplete="off"/></div>
 <div class="field"><label>Tähystäjä</label><input id="observer" list="observerSuggestions" autocomplete="off"/></div>
 <div class="field"><label>Pel.toim.joht.</label><input id="ptj" list="ptjSuggestions" autocomplete="off"/></div>
@@ -397,7 +479,7 @@ section.card{scroll-margin-top:125px}
 <div class="field"><label>Viestivälineet ja taajuudet</label><div class="grid2"><input id="virve" placeholder="Virve esim. KUVPK40"/><input id="vhf" placeholder="VHF esim. kanava 3"/></div></div>
 </div>
 <div class="sectiontitle">Lentoalueen ennakkotiedustelu</div>
-<div class="inlinechecks"><label><input id="aviamaps" type="checkbox"/> <a href="https://aviamaps.com/" rel="noopener" target="_blank">Aviamaps.com</a></label><label><input id="ais" type="checkbox"/> <a href="https://ais.fi/" rel="noopener" target="_blank">AIS.fi (NOTAM)</a></label><label><input id="weatherproof" type="checkbox"/> <a href="https://drone.weatherproof.fi/" rel="noopener" target="_blank">Drone.weatherproof.fi</a></label></div>
+<div class="inlinechecks"><label><input id="aviamaps" type="checkbox"/> <a id="flykLink" href="https://flyk.com/map?drone&lang=fi" rel="noopener" target="_blank">Flyk.com</a></label><label><input id="ais" type="checkbox"/> <a href="https://ais.fi/" rel="noopener" target="_blank">AIS.fi (NOTAM)</a></label><label><input id="weatherproof" type="checkbox"/> <a href="https://drone.weatherproof.fi/" rel="noopener" target="_blank">Drone.weatherproof.fi</a></label></div>
 <div class="grid2">
 <div class="field"><label>Näkö- ja lentoesteet</label><input id="obstacles"/></div>
 <div class="field"><label>Ihmisjoukko</label><input id="crowd"/></div>
@@ -603,7 +685,10 @@ section.card{scroll-margin-top:125px}
 <div class="field"><label>HÄTÄ2</label><input id="hata2"/></div>
 </div>
 <div class="sectiontitle">Kellonajat</div>
-<div class="grid2"><div class="field"><label>TOIMINNAN ALKAMINEN</label><input id="operationStart" type="time"/></div><div class="field"><label>TOIMINNAN PÄÄTTYMINEN</label><input id="operationEnd" type="time"/></div></div>
+<div class="grid2">
+  <div class="field"><label>TOIMINNAN ALKAMINEN</label><div class="timefieldwrap"><input id="operationStart" type="time"/><button type="button" class="secondary timebtn" id="setOperationStartNow">Aseta nykyinen aika</button></div></div>
+  <div class="field"><label>TOIMINNAN PÄÄTTYMINEN</label><div class="timefieldwrap"><input id="operationEnd" type="time"/><button type="button" class="secondary timebtn" id="setOperationEndNow">Aseta nykyinen aika</button></div></div>
+</div>
 <table class="timeTable"><thead><tr><th></th><th>YLÖS</th><th>ALAS</th></tr></thead><tbody>
 <tr><td>1.</td><td><input class="upTime" id="up1" type="time"/></td><td><input class="downTime" id="down1" type="time"/></td></tr>
 <tr><td>2.</td><td><input class="upTime" id="up2" type="time"/></td><td><input class="downTime" id="down2" type="time"/></td></tr>
@@ -626,8 +711,8 @@ section.card{scroll-margin-top:125px}
 <div class="field"><label>Lennon lähtö- ja laskupaikan GPS</label><input id="logGps" placeholder="Ei haettu" readonly=""/></div>
 <div class="field"><label>Ilma-aluksen päällikkö</label><input id="logCaptain" readonly/></div>
 <div class="field"><label>Ilma-aluksen tai ilma-alusjärjestelmän valmistaja ja malli</label><input id="logAircraft" readonly/></div>
-<div class="field"><label>Alkamisaika</label><input id="logStart" type="time"/></div>
-<div class="field"><label>Päättymisaika</label><input id="logEnd" type="time"/></div>
+<div class="field"><label>Alkamisaika</label><div class="timefieldwrap"><input id="logStart" type="time"/><button type="button" class="secondary timebtn" id="setLogStartNow">Aseta nykyinen aika</button></div></div>
+<div class="field"><label>Päättymisaika</label><div class="timefieldwrap"><input id="logEnd" type="time"/><button type="button" class="secondary timebtn" id="setLogEndNow">Aseta nykyinen aika</button></div></div>
 </div>
 <div class="inlinechecks"><label><input id="logVLOS" type="checkbox"/> VLOS – näköyhteydessä lennättäminen</label><label><input id="logEVLOS" type="checkbox"/> EVLOS – laajennettu näköyhteys tähystäjän avulla</label><label><input id="logBVLOS" type="checkbox"/> BVLOS – näköyhteyden ulkopuolella lennättäminen</label></div>
 <div class="grid2"><div class="field"><label>Maksimilentokorkeus</label><input id="logMaxAlt" type="number" readonly/></div><div class="field"><label>Lennetty lähempänä kuin 50 metrin etäisyydellä ihmisjoukosta</label><input id="logNearCrowd"/></div><div class="field"><label>Lentotehtävän luonne</label><input id="logMissionNature" readonly=""/></div></div>
@@ -707,6 +792,36 @@ function calcMinutes(){
  ups.forEach((u,i)=>{const a=toMin(u.value), b=toMin(downs[i].value); if(a!==null&&b!==null&&b>=a) total+=b-a;});
  $("flightMinutes").value=total?String(total):"";
 }
+
+function updateFlykLink(){
+ const link = $("flykLink");
+ if(!link) return;
+
+ const base = "https://flyk.com/map?drone&lang=fi";
+ const gps = val("planStartGps") || val("riskGps") || "";
+
+ if(!gps || gps === "Ei haettu"){
+   link.href = base;
+   return;
+ }
+
+ const parts = gps.split(",");
+ if(parts.length < 2){
+   link.href = base;
+   return;
+ }
+
+ const lat = parseFloat(parts[0]);
+ const lon = parseFloat(parts[1]);
+
+ if(isNaN(lat) || isNaN(lon)){
+   link.href = base;
+   return;
+ }
+
+ link.href = base + "#p=13/" + lat.toFixed(6) + "/" + lon.toFixed(6);
+}
+
 function sync(){
  updateName();
  if($("riskGps")) $("riskGps").value=gpsText();
@@ -742,6 +857,7 @@ function sync(){
 
  if($("logMaxAlt")) $("logMaxAlt").value=val("maxAlt")||"";
  $("logMissionNature").value=val("mission")+(val("missionOther")?"/ "+val("missionOther"):"");
+ updateFlykLink();
 }
 function collect(){
  return {name:taskName(), savedAt:new Date().toISOString(), fields:[...document.querySelectorAll("input,select,textarea")].map(e=>({id:e.id,type:e.type,value:(e.type==="checkbox"||e.type==="radio")?e.checked:e.value}))};
@@ -761,7 +877,7 @@ function startTask(){
  $("startError").classList.add("hidden");
  $("date").value=val("startDate"); $("time").value=val("startTime"); $("place").value=val("startPlace"); if($("startAircraft") && $("aircraft")) $("aircraft").value=val("startAircraft");
  currentTaskName = buildTaskName();
- sync(); autosave(); saveLastTaskKey(); saveToBackend("StartTask"); location.hash="#risk";
+ sync(); updateFlykLink(); autosave(); saveLastTaskKey(); saveToBackend("StartTask"); location.hash="#risk";
 }
 function done(){
  $("chkRiskPlan").checked=true;
@@ -771,13 +887,15 @@ function done(){
 }
 function getGps(){
  const status=$("gpsStatus");
- if(status) status.textContent="Haetaan GPS-sijaintia...";
+ if(status) status.textContent="Haetaan GPS-sijaintia..."; setSaveStatus("Haetaan GPS-sijaintia...", "wait");
  if(!navigator.geolocation){ if(status) status.textContent="Tämä selain ei tue GPS-paikannusta."; return; }
  navigator.geolocation.getCurrentPosition(pos=>{
    const gps = pos.coords.latitude.toFixed(6) + ", " + pos.coords.longitude.toFixed(6);
    if($("planStartGps")) $("planStartGps").value = gps;
    if($("planLandingGps")) $("planLandingGps").value = gps;
-   if(status) status.textContent="GPS-sijainti haettu.";
+   if($("riskGps")) $("riskGps").value = gps;
+   if($("logGps")) $("logGps").value = gps;
+   if(status) status.textContent="GPS-sijainti haettu."; setSaveStatus("GPS-sijainti haettu", "ok");
    sync(); autosave();
  }, err=>{
    if(status) status.textContent="GPS-sijaintia ei saatu. Voit jatkaa ilman sitä.";
@@ -1440,15 +1558,15 @@ function nonEmpty(v){
 
 function fieldRow(label, value){
  const empty = !nonEmpty(value);
- return `<div class="reportfield">
-   <div class="reportfieldlabel">${escHtml(label)}</div>
+ return `<div class="field reportfield">
+   <label class="reportfieldlabel">${escHtml(label)}</label>
    <div class="reportfieldvalue ${empty ? "empty" : ""}">${empty ? "-" : escHtml(value)}</div>
  </div>`;
 }
 
 function checkLine(label, value){
  const checked = boolValue(value);
- return `<label class="report-checkline ${checked ? "done" : ""}">
+ return `<label class="report-checkline">
    <input type="checkbox" disabled ${checked ? "checked" : ""}>
    <span>${escHtml(label)}</span>
  </label>`;
@@ -1475,7 +1593,7 @@ function riskCard(label, value, score){
 
 function section(title, inner, subtitle, type){
  const cls = type || "";
- return `<div class="reportsection pagebreak">
+ return `<div class="reportsection">
    <div class="reporthead ${cls}">${escHtml(title)}</div>
    <div class="reportbody">${subtitle ? `<div class="report-subtitle">${escHtml(subtitle)}</div>` : ""}${inner || "<div>Ei tietoja.</div>"}</div>
  </div>`;
@@ -1998,6 +2116,7 @@ function loadReportToForm(report){
  sync();
  updateName();
  setupOpenLogButton();
+ setupTimeButtons();
  activateLoadedTask(currentTaskName);
 }
 
@@ -2035,11 +2154,41 @@ async function reopenTask(tehtavaNimi){
  }
 }
 
+
+function setTimeNow(id){
+ const el=$(id);
+ if(!el) return;
+ el.value=currentTimeHHMM();
+ sync();
+ calcMinutes();
+ autosave();
+ if(!taskClosing) queueBackendSave();
+}
+
+function setupTimeButtons(){
+ const map=[
+  ["setOperationStartNow","operationStart"],
+  ["setOperationEndNow","operationEnd"],
+  ["setLogStartNow","logStart"],
+  ["setLogEndNow","logEnd"]
+ ];
+ map.forEach(([btnId,inputId])=>{
+  const btn=$(btnId);
+  if(btn) btn.addEventListener("click",()=>setTimeNow(inputId));
+ });
+
+ const riskGpsBtn=$("riskGpsBtn");
+ if(riskGpsBtn && !riskGpsBtn.dataset.bound){ riskGpsBtn.dataset.bound="1"; riskGpsBtn.addEventListener("click",getGps); }
+
+ const planGpsBtn=$("gpsBtn");
+ if(planGpsBtn && !planGpsBtn.dataset.bound){ planGpsBtn.dataset.bound="1"; planGpsBtn.addEventListener("click",getGps); }
+}
+
 document.addEventListener("DOMContentLoaded",function(){
  const today=new Date().toISOString().slice(0,10); $("startDate").value=today; if($("startTime") && !$("startTime").value) $("startTime").value=currentTimeHHMM(); if($("ptj") && !$("ptj").value) $("ptj").value="P33";
   calcRisk(); updateName(); checkRecovery();
  $("startBtn").addEventListener("click",startTask);
- $("gpsBtn").addEventListener("click",getGps);
+ const oldGpsBtn=$("gpsBtn"); if(oldGpsBtn && !oldGpsBtn.dataset.bound){ oldGpsBtn.dataset.bound="1"; oldGpsBtn.addEventListener("click",getGps); }
  document.querySelectorAll("#riskRows select").forEach(s=>{
   s.addEventListener("change",()=>{calcRisk();sync();if(!taskClosing) queueBackendSave();});
   s.addEventListener("input",()=>{calcRisk();sync();if(!taskClosing) queueBackendSave();});
@@ -2061,6 +2210,7 @@ document.addEventListener("DOMContentLoaded",function(){
  const finishTaskBtn=$("finishTaskBtn"); if(finishTaskBtn) finishTaskBtn.addEventListener("click",finishTask);
  const cancelTaskBtn=$("cancelTaskBtn"); if(cancelTaskBtn) cancelTaskBtn.addEventListener("click",cancelTask);
  setupOpenLogButton();
+ setupTimeButtons();
  document.querySelectorAll("input,select,textarea").forEach(e=>{
   e.addEventListener("input",()=>{sync();calcMinutes();autosave();if(!taskClosing) queueBackendSave();});
   e.addEventListener("change",()=>{sync();calcMinutes();autosave();if(!taskClosing) queueBackendSave();});
