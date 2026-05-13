@@ -472,7 +472,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta weather-ms-23-2 final-lock</div>
+<div class="title">VPK UAS – beta weather-ms-33-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -1060,13 +1060,46 @@ function autosave(){
  }catch(e){}
 }
 function saveFlash(){autosave(); const s=$("savedInfo"); s.style.display="block"; setTimeout(()=>s.style.display="none",2000);}
-function startTask(){
+async function startTask(){
  if(!val("startDate")||!val("startTime")||!val("startPlace")){$("startError").classList.remove("hidden"); return;}
  $("startError").classList.add("hidden");
- $("date").value=val("startDate"); $("time").value=val("startTime"); $("place").value=val("startPlace"); if($("startAircraft") && $("aircraft")) $("aircraft").value=val("startAircraft");
+
+ $("date").value=val("startDate");
+ $("time").value=val("startTime");
+ $("place").value=val("startPlace");
+ if($("startAircraft") && $("aircraft")) $("aircraft").value=val("startAircraft");
+
  currentTaskName = buildTaskName();
- sync(); updateFlykLink(); autosave(); fetchWeatherForGps(gps); saveLastTaskKey(); saveToBackend("StartTask"); location.hash="#risk";
+ currentTaskStatus = "Kesken";
+ taskClosing = false;
+
+ sync();
+ autosave();
+ saveLastTaskKey();
+
+ const btn = $("startBtn");
+ if(btn){
+   btn.disabled = true;
+   btn.textContent = "Tallennetaan...";
+ }
+
+ setSaveStatus("Aloitetaan tehtävää ja tallennetaan Google Sheetiin...", "wait");
+
+ try{
+   await saveToBackend("StartTask", "Kesken");
+   setSaveStatus("Tehtävä aloitettu ja tallennettu", "ok");
+   setTimeout(()=>{ location.hash="#risk"; }, 100);
+ }catch(e){
+   setSaveStatus("Tehtävä avattu paikallisesti, mutta Google Sheet -tallennusta ei voitu varmistaa", "err");
+   setTimeout(()=>{ location.hash="#risk"; }, 100);
+ }finally{
+   if(btn){
+     btn.disabled = false;
+     btn.textContent = "Aloita tehtävä";
+   }
+ }
 }
+
 function done(){
  $("chkRiskPlan").checked=true;
  saveFlash();
