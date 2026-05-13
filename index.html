@@ -421,7 +421,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta combos-names-fixed3-2 final-lock</div>
+<div class="title">VPK UAS – beta names-weather3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -517,7 +517,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 <div class="field"><label>Päivämäärä</label><input id="date" readonly="" type="date"/></div>
 <div class="field"><label>Kellonaika</label><input id="time" readonly="" type="time"/></div>
 <div class="field"><label>GPS-sijainti</label><input id="riskGps" placeholder="Ei haettu" readonly=""/><button type="button" class="secondary timebtn" id="riskGpsBtn">Hae GPS-sijainti</button><div class="notice" style="margin-top:8px">
-GPS-haulla täytetään sijainti riskinarviointiin, lentosuunnitelmaan ja lentopäiväkirjaan. Flyk.com-linkki avaa ilman GPS:ää yleisen drone-kartan ja GPS:n jälkeen suoraan tehtävän sijaintiin.
+GPS-haulla täytetään sijainti riskinarviointiin, lentosuunnitelmaan ja lentopäiväkirjaan. Samalla yritetään hakea lämpötila ja tuuli automaattisesti, mutta ne voi aina korjata käsin. Flyk.com-linkki avaa ilman GPS:ää yleisen drone-kartan ja GPS:n jälkeen suoraan tehtävän sijaintiin.
 </div></div>
 <div class="field"><label>Kauko-ohjaaja</label><div class="comboWrap">
   <input id="pilot" autocomplete="off"/>
@@ -735,7 +735,7 @@ GPS-haulla täytetään sijainti riskinarviointiin, lentosuunnitelmaan ja lentop
 <div class="sectiontitle">Lentokorkeudet</div>
 <div class="summary"><div><strong>Maksimi lentokorkeus:</strong> <span id="planMaxAlt">-</span></div><div><strong>Minimi lentokorkeus:</strong> <span id="planMinAlt">-</span></div></div>
 <div class="sectiontitle">Lennätyspaikka ja varalaskupaikat</div>
-<div class="notice">GPS voidaan hakea riskinarvioinnissa tai lentosuunnitelmassa. Sama sijainti täyttyy lähtö- ja laskupaikan lisätiedoksi sekä lentopäiväkirjaan. Flyk.com-linkki avaa ilman GPS:ää yleisen drone-kartan ja GPS:n jälkeen suoraan tehtävän sijaintiin.</div>
+<div class="notice">GPS voidaan hakea riskinarvioinnissa tai lentosuunnitelmassa. Sama sijainti täyttyy lähtö- ja laskupaikan lisätiedoksi sekä lentopäiväkirjaan. GPS-haun yhteydessä yritetään hakea lämpötila ja tuuli automaattisesti, mutta kentät voi korjata käsin. Flyk.com-linkki avaa ilman GPS:ää yleisen drone-kartan ja GPS:n jälkeen suoraan tehtävän sijaintiin.</div>
 <div style="margin-bottom:10px">
 <button id="gpsBtn" type="button">Hae GPS-sijainti</button>
 <span class="subtle" id="gpsStatus" style="margin-left:8px"></span>
@@ -888,6 +888,49 @@ function updateFlykLink(){
  link.href = base + "#p=13/" + lat.toFixed(6) + "/" + lon.toFixed(6);
 }
 
+
+async function fetchWeatherForGps(gps){
+ try{
+   const parts = String(gps || "").split(",");
+   if(parts.length < 2) return;
+
+   const lat = parseFloat(parts[0]);
+   const lon = parseFloat(parts[1]);
+   if(isNaN(lat) || isNaN(lon)) return;
+
+   setSaveStatus("Haetaan lämpötilaa ja tuulta...", "wait");
+
+   const url = "https://api.open-meteo.com/v1/forecast?latitude=" +
+     encodeURIComponent(lat.toFixed(6)) +
+     "&longitude=" + encodeURIComponent(lon.toFixed(6)) +
+     "&current=temperature_2m,wind_speed_10m&wind_speed_unit=ms&timezone=auto";
+
+   const res = await fetch(url);
+   if(!res.ok) throw new Error("Sääpalvelu ei vastannut");
+
+   const data = await res.json();
+
+   if(data && data.current){
+     if($("temp") && data.current.temperature_2m !== undefined && data.current.temperature_2m !== null){
+       $("temp").value = Math.round(Number(data.current.temperature_2m));
+     }
+
+     if($("wind") && data.current.wind_speed_10m !== undefined && data.current.wind_speed_10m !== null){
+       $("wind").value = Number(data.current.wind_speed_10m).toFixed(1);
+     }
+
+     sync();
+     autosave();
+     if(!taskClosing) queueBackendSave();
+
+     setSaveStatus("GPS, lämpötila ja tuuli haettu", "ok");
+   }
+ }catch(e){
+   setSaveStatus("GPS haettu, mutta säädataa ei saatu automaattisesti", "wait");
+ }
+}
+
+
 function sync(){
  updateName();
  if($("riskGps")) $("riskGps").value=gpsText();
@@ -943,7 +986,7 @@ function startTask(){
  $("startError").classList.add("hidden");
  $("date").value=val("startDate"); $("time").value=val("startTime"); $("place").value=val("startPlace"); if($("startAircraft") && $("aircraft")) $("aircraft").value=val("startAircraft");
  currentTaskName = buildTaskName();
- sync(); updateFlykLink(); autosave(); saveLastTaskKey(); saveToBackend("StartTask"); location.hash="#risk";
+ sync(); updateFlykLink(); autosave(); fetchWeatherForGps(gps); saveLastTaskKey(); saveToBackend("StartTask"); location.hash="#risk";
 }
 function done(){
  $("chkRiskPlan").checked=true;
