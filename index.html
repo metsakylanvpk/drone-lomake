@@ -421,7 +421,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta names-weather3-2 final-lock</div>
+<div class="title">VPK UAS – beta weather-fix3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -555,7 +555,7 @@ GPS-haulla täytetään sijainti riskinarviointiin, lentosuunnitelmaan ja lentop
 <div class="sectiontitle">Sää lennätyspaikalla</div>
 <div class="grid2">
 <div class="field"><label>Lämpötila (°C)</label><input id="temp" type="number"/></div>
-<div class="field"><label>Tuuli (m/s)</label><input id="wind" type="number"/></div>
+<div class="field"><label>Tuuli (m/s)</label><input id="wind" type="number"/><button type="button" class="secondary timebtn" id="weatherBtn">Hae sää GPS:n perusteella</button></div>
 <div class="field"><label>Sade/sumu</label><select id="rain"><option>Ei</option><option>Kevyt</option><option>Voimakas</option></select></div>
 <div class="field"><label>Valoisuus</label><select id="light"><option>Päivä</option><option>Hämärä</option><option>Pimeä</option></select></div>
 </div>
@@ -1006,6 +1006,7 @@ function getGps(){
    if($("logGps")) $("logGps").value = gps;
    if(status) status.textContent="GPS-sijainti haettu."; setSaveStatus("GPS-sijainti haettu", "ok");
    sync(); updateFlykLink(); autosave();
+   fetchWeatherForGps(gps);
  }, err=>{
    if(status) status.textContent="GPS-sijaintia ei saatu. Voit jatkaa ilman sitä.";
  }, {enableHighAccuracy:true, timeout:20000, maximumAge:0});
@@ -2290,6 +2291,12 @@ function setupTimeButtons(){
 
  const riskGpsBtn=$("riskGpsBtn");
  if(riskGpsBtn && !riskGpsBtn.dataset.bound){ riskGpsBtn.dataset.bound="1"; riskGpsBtn.addEventListener("click",getGps); }
+
+ const weatherBtn=$("weatherBtn");
+ if(weatherBtn && !weatherBtn.dataset.bound){
+   weatherBtn.dataset.bound="1";
+   weatherBtn.addEventListener("click",()=>fetchWeatherForGps(val("planStartGps") || val("riskGps")));
+ }
 
  const planGpsBtn=$("gpsBtn");
  if(planGpsBtn && !planGpsBtn.dataset.bound){ planGpsBtn.dataset.bound="1"; planGpsBtn.addEventListener("click",getGps); }
