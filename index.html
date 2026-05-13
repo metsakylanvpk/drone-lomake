@@ -375,6 +375,14 @@ button.secondary,.btn.secondary{
 .comboItem:last-child{border-bottom:none}
 .comboItem:hover{background:#f8fafc}
 
+
+/* Vain nappien yhtenäinen väri, ei layout-muutoksia */
+button.secondary,.btn.secondary,.timebtn,.comboBtn{
+  background:var(--primary)!important;
+  color:#fff!important;
+  border:none!important;
+}
+
 </style>
 </head>
 <body>
@@ -413,7 +421,7 @@ button.secondary,.btn.secondary{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta hallinta combos3-2 final-lock</div>
+<div class="title">VPK UAS – beta combos-safe3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -447,6 +455,9 @@ button.secondary,.btn.secondary{
 <section class="card" id="checklist">
 <div class="head check"><h2>TARKASTUSLISTA – PELASTUSTOIMEN UAS-TOIMINTA</h2></div>
 <div class="body">
+<div style="margin-bottom:12px">
+<button type="button" id="selectAllChecklistBtn">Valitse kaikki tarkistuslistan kohdat</button>
+</div>
 <div class="sectiontitle">ENNEN LENNON ALOITTAMISTA:</div>
 <label class="checkline"><input id="chkRiskPlan" type="checkbox"/><span>Kirjallinen riskinarviointi ja lentosuunnitelma (lomakkeen täyttö)</span></label>
 <label class="checkline"><input id="clAuto01" type="checkbox"/><span>Nousu- ja laskupaikan perustaminen</span></label>
@@ -505,7 +516,9 @@ button.secondary,.btn.secondary{
 <div class="field"><label>Paikka</label><input id="place" readonly=""/></div>
 <div class="field"><label>Päivämäärä</label><input id="date" readonly="" type="date"/></div>
 <div class="field"><label>Kellonaika</label><input id="time" readonly="" type="time"/></div>
-<div class="field"><label>GPS-sijainti</label><input id="riskGps" placeholder="Ei haettu" readonly=""/><button type="button" class="secondary timebtn" id="riskGpsBtn">Hae GPS-sijainti</button></div>
+<div class="field"><label>GPS-sijainti</label><input id="riskGps" placeholder="Ei haettu" readonly=""/><button type="button" class="secondary timebtn" id="riskGpsBtn">Hae GPS-sijainti</button><div class="notice" style="margin-top:8px">
+GPS-haulla täytetään sijainti riskinarviointiin, lentosuunnitelmaan ja lentopäiväkirjaan. Flyk.com-linkki avaa ilman GPS:ää yleisen drone-kartan ja GPS:n jälkeen suoraan tehtävän sijaintiin.
+</div></div>
 <div class="field"><label>Kauko-ohjaaja</label><div class="comboWrap">
   <input id="pilot" autocomplete="off"/>
   <button type="button" class="comboBtn" data-combo="pilot">▾</button>
@@ -722,7 +735,7 @@ button.secondary,.btn.secondary{
 <div class="sectiontitle">Lentokorkeudet</div>
 <div class="summary"><div><strong>Maksimi lentokorkeus:</strong> <span id="planMaxAlt">-</span></div><div><strong>Minimi lentokorkeus:</strong> <span id="planMinAlt">-</span></div></div>
 <div class="sectiontitle">Lennätyspaikka ja varalaskupaikat</div>
-<div class="notice">GPS haetaan vasta tehtäväpaikalla. Kun painat “Hae GPS-sijainti”, sama sijainti täyttyy lähtö- ja laskupaikan lisätiedoksi sekä lentopäiväkirjaan.</div>
+<div class="notice">GPS voidaan hakea riskinarvioinnissa tai lentosuunnitelmassa. Sama sijainti täyttyy lähtö- ja laskupaikan lisätiedoksi sekä lentopäiväkirjaan. Flyk.com-linkki avaa ilman GPS:ää yleisen drone-kartan ja GPS:n jälkeen suoraan tehtävän sijaintiin.</div>
 <div style="margin-bottom:10px">
 <button id="gpsBtn" type="button">Hae GPS-sijainti</button>
 <span class="subtle" id="gpsStatus" style="margin-left:8px"></span>
@@ -949,7 +962,7 @@ function getGps(){
    if($("riskGps")) $("riskGps").value = gps;
    if($("logGps")) $("logGps").value = gps;
    if(status) status.textContent="GPS-sijainti haettu."; setSaveStatus("GPS-sijainti haettu", "ok");
-   sync(); autosave();
+   sync(); updateFlykLink(); autosave();
  }, err=>{
    if(status) status.textContent="GPS-sijaintia ei saatu. Voit jatkaa ilman sitä.";
  }, {enableHighAccuracy:true, timeout:20000, maximumAge:0});
@@ -2171,6 +2184,7 @@ function loadReportToForm(report){
  setupOpenLogButton();
  setupTimeButtons();
  setupComboBoxes();
+ setupChecklistSelectAll();
  activateLoadedTask(currentTaskName);
 }
 
@@ -2284,6 +2298,31 @@ function setupComboBoxes(){
  document.addEventListener("click",()=>closeAll(""));
 }
 
+
+function setupChecklistSelectAll(){
+ const btn = $("selectAllChecklistBtn");
+ if(!btn) return;
+
+ btn.addEventListener("click", ()=>{
+   document.querySelectorAll("#checklist input[type='checkbox']").forEach(cb=>{
+     const id = cb.id || "";
+
+     // Ei valita ilmoituksia alussa/lopussa. GO/NO GO on radio, ei checkbox.
+     if(
+       id === "clAuto03" || id === "clAuto04" || id === "clAuto05" || id === "clAuto06" ||
+       id === "clAuto30" || id === "clAuto31" || id === "clAuto32" || id === "clAuto33"
+     ){
+       return;
+     }
+
+     cb.checked = true;
+   });
+
+   autosave();
+   if(!taskClosing) queueBackendSave();
+ });
+}
+
 document.addEventListener("DOMContentLoaded",function(){
  const today=new Date().toISOString().slice(0,10); $("startDate").value=today; if($("startTime") && !$("startTime").value) $("startTime").value=currentTimeHHMM(); if($("ptj") && !$("ptj").value) $("ptj").value="P33";
   calcRisk(); updateName(); checkRecovery();
@@ -2312,6 +2351,7 @@ document.addEventListener("DOMContentLoaded",function(){
  setupOpenLogButton();
  setupTimeButtons();
  setupComboBoxes();
+ setupChecklistSelectAll();
  document.querySelectorAll("input,select,textarea").forEach(e=>{
   e.addEventListener("input",()=>{sync();calcMinutes();autosave();if(!taskClosing) queueBackendSave();});
   e.addEventListener("change",()=>{sync();calcMinutes();autosave();if(!taskClosing) queueBackendSave();});
