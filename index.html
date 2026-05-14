@@ -480,7 +480,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta weather-ms-43-2 final-lock</div>
+<div class="title">VPK UAS – beta weather-ms-63-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -1091,21 +1091,23 @@ async function startTask(){
    btn.textContent = "Tallennetaan...";
  }
 
- setSaveStatus("Aloitetaan tehtävää ja tallennetaan Google Sheetiin...", "wait");
+ setSaveStatus("Tehtävä avattu, tallennetaan Google Sheetiin...", "wait");
+ location.hash="#risk";
 
- try{
-   await saveToBackend("StartTask", "Kesken");
-   setSaveStatus("Tehtävä aloitettu ja tallennettu", "ok");
-   setTimeout(()=>{ location.hash="#risk"; }, 100);
- }catch(e){
+ saveToBackend("StartTask", "Kesken").then(ok=>{
+   if(ok){
+     setSaveStatus("Tehtävä aloitettu ja tallennettu", "ok");
+   }else{
+     setSaveStatus("Tehtävä avattu paikallisesti, mutta Google Sheet -tallennusta ei voitu varmistaa", "err");
+   }
+ }).catch(()=>{
    setSaveStatus("Tehtävä avattu paikallisesti, mutta Google Sheet -tallennusta ei voitu varmistaa", "err");
-   setTimeout(()=>{ location.hash="#risk"; }, 100);
- }finally{
+ }).finally(()=>{
    if(btn){
      btn.disabled = false;
      btn.textContent = "Aloita tehtävä";
    }
- }
+ });
 }
 
 function done(){
@@ -1395,6 +1397,18 @@ function buildSections(){
  };
 }
 
+
+async function fetchWithTimeout(url, options, timeoutMs){
+ const controller = new AbortController();
+ const timer = setTimeout(()=>controller.abort(), timeoutMs || 8000);
+ try{
+   const opts = Object.assign({}, options || {}, { signal: controller.signal });
+   return await fetch(url, opts);
+ }finally{
+   clearTimeout(timer);
+ }
+}
+
 async function saveToBackend(toiminto, tila){
  ensureActiveTaskFields();
  if(!val("date") || !val("time") || !val("place")){
@@ -1417,13 +1431,16 @@ async function saveToBackend(toiminto, tila){
  };
  try{
   const showSaveOverlay = toiminto !== "Autosave";
-  if(showSaveOverlay) showLoading("Tallennetaan Google Sheetiin...");
+  if(showSaveOverlay){
+    hideLoading();
+    showLoading("Tallennetaan Google Sheetiin...");
+  }
   setSaveStatus("Tallennetaan Google Sheetiin...", "wait");
-  const res = await fetch(API_URL, {
+  const res = await fetchWithTimeout(API_URL, {
     method:"POST",
     headers:{"Content-Type":"text/plain;charset=utf-8"},
     body:JSON.stringify(payload)
-  });
+  }, showSaveOverlay ? 8000 : 12000);
   const text = await res.text();
   let json = {};
   try{ json = JSON.parse(text); }catch(e){ json={ok:res.ok, raw:text}; }
@@ -1436,12 +1453,12 @@ async function saveToBackend(toiminto, tila){
   throw new Error(json.error || "Tallennus epäonnistui");
  }catch(err){
   try{
-    await fetch(API_URL, {
+    await fetchWithTimeout(API_URL, {
       method:"POST",
       mode:"no-cors",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body:JSON.stringify(payload)
-    });
+    }, showSaveOverlay ? 5000 : 8000);
     if(showSaveOverlay) hideLoading();
     setSaveStatus("Tallennus lähetetty (vastausta ei voitu varmistaa). Tarkista Sheet tarvittaessa.", "wait");
     return true;
@@ -1840,15 +1857,26 @@ function grid(inner){
 }
 
 function renderExtraFields(data, usedKeys){
- if(!data) return "";
- const used = {};
- (usedKeys || []).forEach(k => used[k] = true);
- let rows = "";
- Object.keys(data).forEach(k=>{
-   if(used[k]) return;
-   rows += fieldRow(labelize(k), data[k]);
+ const skip = new Set((usedKeys || []).concat([
+   "TehtavaNimi","Tallennettu","TallennettuAika","savedAt","SavedAt","Timestamp","Aikaleima","Tallennusaika"
+ ]));
+ const keys = Object.keys(data || {}).filter(k=>{
+   if(skip.has(k)) return false;
+   const v = data[k];
+   return v !== null && typeof v !== "undefined" && String(v) !== "";
  });
- return rows ? `<div class="reportsectiontitle">Muut tiedot</div>${grid(rows)}` : "";
+
+ if(!keys.length) return "";
+
+ let rows = keys.map(k=>{
+   const v = data[k];
+   if(typeof v === "boolean" || String(v).toLowerCase() === "true" || String(v).toLowerCase() === "false"){
+     return checkLine(labelize(k), v);
+   }
+   return fieldRow(labelize(k), v);
+ }).join("");
+
+ return `<div class="reportsectiontitle">Muut tiedot</div>${rows}`;
 }
 
 function renderTaskSummary(data){
@@ -2495,6 +2523,7 @@ function setupChecklistSelectAll(){
      cb.checked = true;
    });
 
+   setupOpenLogButton();
    autosave();
    if(!taskClosing) queueBackendSave();
  });
