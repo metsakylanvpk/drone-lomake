@@ -480,7 +480,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta weather-ms-73-2 final-lock</div>
+<div class="title">VPK UAS – beta weather-ms-103-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -1805,11 +1805,44 @@ function nonEmpty(v){
  return v !== "" && v !== null && typeof v !== "undefined";
 }
 
+
+
+
+// HUOM:
+// input type="date" käyttää selaimessa teknisesti YYYY-MM-DD arvoa.
+// Näkyvät raportit ja tekstikentät formatoidaan käyttäjälle DD-MM-YYYY muotoon.
+
+function formatDateFI(value){
+ if(value == null) return "";
+ const s = String(value);
+
+ // ISO tai YYYY-MM-DD -> DD-MM-YYYY
+ const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+ if(m){
+   return `${m[3]}-${m[2]}-${m[1]}`;
+ }
+
+ return s;
+}
+
+function formatReportValue(label, value){
+ const key = String(label || "").toLowerCase();
+ let v = value == null ? "" : String(value);
+
+ // Päivämääräkentissä käytetään DD-MM-YYYY muotoa.
+ if(key.indexOf("päivämäär") !== -1 || key.indexOf("paivamaar") !== -1 || key.indexOf("date") !== -1){
+   return formatDateFI(v);
+ }
+
+ return v;
+}
+
 function fieldRow(label, value){
- const empty = !nonEmpty(value);
+ const shown = formatReportValue(label, value);
+ const empty = !nonEmpty(shown);
  return `<div class="field reportfield">
    <label class="reportfieldlabel">${escHtml(label)}</label>
-   <div class="reportfieldvalue ${empty ? "empty" : ""}">${empty ? "-" : escHtml(value)}</div>
+   <div class="reportfieldvalue ${empty ? "empty" : ""}">${empty ? "-" : escHtml(shown)}</div>
  </div>`;
 }
 
@@ -1854,7 +1887,7 @@ function grid(inner){
 
 function renderExtraFields(data, usedKeys){
  const skip = new Set((usedKeys || []).concat([
-   "TehtavaNimi","Tallennettu","TallennettuAika","savedAt","SavedAt","Timestamp","Aikaleima","Tallennusaika"
+   "TehtavaNimi","Tallennettu","TallennettuAika","Tallennettu aika","Tallennusaika","TallennusAika","savedAt","SavedAt","Timestamp","Aikaleima","CreatedAt","UpdatedAt","Paivitetty","Päivitetty"
  ]));
  const keys = Object.keys(data || {}).filter(k=>{
    if(skip.has(k)) return false;
@@ -1891,7 +1924,7 @@ function renderTaskSummary(data){
  rows += fieldRow("Pel.toim.joht.", data.PelToimJohtaja);
  rows += fieldRow("Lentotehtävä", [data.Lentotehtava, data.LentotehtavaMuu].filter(Boolean).join(" / "));
  rows += fieldRow("Ilma-alus", data.KaytettavaIlmaAlus);
- return section("Tehtävä / tila", top + grid(rows) + renderExtraFields(data, used), "", "task");
+ return section("Tehtävä / tila", top + grid(rows), "", "task");
 }
 
 function renderChecklist(data){
@@ -1945,7 +1978,7 @@ function renderChecklist(data){
    }
    return checkLine(label, data[key]);
  }).join("");
- return section("Tarkistuslista", `<div class="checkreport">${items}</div>` + renderExtraFields(data, used), "", "check");
+ return section("Tarkistuslista", `<div class="checkreport">${items}</div>`, "", "check");
 }
 
 function renderRiskReport(data){
@@ -2038,7 +2071,7 @@ function renderPlanReport(data){
    times.map(r=>`<tr><td>${escHtml(r[0])}</td><td>${escHtml(r[1]||"")}</td><td>${escHtml(r[2]||"")}</td></tr>`).join("") +
    `</tbody></table>`;
 
- return section("Lentosuunnitelma", grid(rows) + timeTable + renderExtraFields(data, used), "", "plan");
+ return section("Lentosuunnitelma", grid(rows) + timeTable, "", "plan");
 }
 
 function renderLogReport(data){
@@ -2061,7 +2094,7 @@ function renderLogReport(data){
    ${checkLine("EVLOS – laajennettu näköyhteys tähystäjän avulla", data.EVLOS)}
    ${checkLine("BVLOS – näköyhteyden ulkopuolella lennättäminen", data.BVLOS)}
  </div>`;
- return section("Lentopäiväkirja", grid(rows) + checks + renderExtraFields(data, used), "", "log");
+ return section("Lentopäiväkirja", grid(rows) + checks, "", "log");
 }
 
 function renderFullReport(r){
