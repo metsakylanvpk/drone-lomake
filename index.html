@@ -480,7 +480,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta weather-ms-63-2 final-lock</div>
+<div class="title">VPK UAS – beta weather-ms-73-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -1146,6 +1146,17 @@ function setSaveStatus(text, cls){
  if(!el) return;
  el.textContent=text;
  el.className="savestatus " + (cls||"wait");
+
+ // Jos status ei ole enää odotustilassa, poistetaan mahdollinen koko ruudun tallennusoverlay.
+ // Tämä estää tilanteen, jossa yläpalkki sanoo tallennetuksi mutta overlay jää näkyviin.
+ if(cls === "ok" || cls === "err"){
+   try{ hideLoading(); }catch(e){}
+ }
+
+ // Myös "ei voitu varmistaa" on käyttöliittymän kannalta valmis tila, ei ikuinen lataus.
+ if(cls === "wait" && String(text || "").toLowerCase().indexOf("ei voitu varmistaa") !== -1){
+   try{ hideLoading(); }catch(e){}
+ }
 }
 
 
@@ -1397,18 +1408,6 @@ function buildSections(){
  };
 }
 
-
-async function fetchWithTimeout(url, options, timeoutMs){
- const controller = new AbortController();
- const timer = setTimeout(()=>controller.abort(), timeoutMs || 8000);
- try{
-   const opts = Object.assign({}, options || {}, { signal: controller.signal });
-   return await fetch(url, opts);
- }finally{
-   clearTimeout(timer);
- }
-}
-
 async function saveToBackend(toiminto, tila){
  ensureActiveTaskFields();
  if(!val("date") || !val("time") || !val("place")){
@@ -1431,16 +1430,13 @@ async function saveToBackend(toiminto, tila){
  };
  try{
   const showSaveOverlay = toiminto !== "Autosave";
-  if(showSaveOverlay){
-    hideLoading();
-    showLoading("Tallennetaan Google Sheetiin...");
-  }
+  if(showSaveOverlay) showLoading("Tallennetaan Google Sheetiin...");
   setSaveStatus("Tallennetaan Google Sheetiin...", "wait");
-  const res = await fetchWithTimeout(API_URL, {
+  const res = await fetch(API_URL, {
     method:"POST",
     headers:{"Content-Type":"text/plain;charset=utf-8"},
     body:JSON.stringify(payload)
-  }, showSaveOverlay ? 8000 : 12000);
+  });
   const text = await res.text();
   let json = {};
   try{ json = JSON.parse(text); }catch(e){ json={ok:res.ok, raw:text}; }
@@ -1453,12 +1449,12 @@ async function saveToBackend(toiminto, tila){
   throw new Error(json.error || "Tallennus epäonnistui");
  }catch(err){
   try{
-    await fetchWithTimeout(API_URL, {
+    await fetch(API_URL, {
       method:"POST",
       mode:"no-cors",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body:JSON.stringify(payload)
-    }, showSaveOverlay ? 5000 : 8000);
+    });
     if(showSaveOverlay) hideLoading();
     setSaveStatus("Tallennus lähetetty (vastausta ei voitu varmistaa). Tarkista Sheet tarvittaessa.", "wait");
     return true;
