@@ -480,7 +480,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta weather-ms-113-2 final-lock</div>
+<div class="title">VPK UAS – beta weather-ms-103-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -1471,7 +1471,7 @@ function queueBackendSave(){
  backendSaveTimer = setTimeout(()=>saveToBackend("Autosave"), 1500);
 }
 
-async async function finishTask(){
+async function finishTask(){
  if(taskClosing) return;
  taskClosing = true;
  clearTimeout(backendSaveTimer);
@@ -1505,7 +1505,6 @@ async async function finishTask(){
    }catch(e){}
 
    setSaveStatus("Tehtävä merkitty valmiiksi", "ok");
-   showLoading("Tehtävä tallennettu. Siirrytään uuteen tehtävään...");
 
    setTimeout(()=>{
      window.location.assign(window.location.origin + window.location.pathname + "?newtask=" + Date.now());
@@ -1523,7 +1522,7 @@ async async function finishTask(){
  }
 }
 
-async async function cancelTask(){
+async function cancelTask(){
  if(taskClosing) return;
  taskClosing = true;
  clearTimeout(backendSaveTimer);
@@ -1556,8 +1555,7 @@ async async function cancelTask(){
      currentTaskName = "";
    }catch(e){}
 
-   setSaveStatus("Tehtävä merkitty keskeytetyksi", "ok");
-   showLoading("Tehtävä tallennettu keskeytetyksi. Siirrytään uuteen tehtävään...");
+   setSaveStatus("Tehtävä merkitty keskeytetyksi", "wait");
 
    setTimeout(()=>{
      window.location.assign(window.location.origin + window.location.pathname + "?newtask=" + Date.now());
@@ -1986,7 +1984,7 @@ function renderChecklist(data){
 function renderRiskReport(data){
  if(!data) return section("Riskinarviointi", "Ei tietoja.", "", "risk");
  const used = [
-  "TehtavaNimi","Paikka","Paivamaara","Kellonaika","GPS","KaukoOhjaaja","Tahystaja","PelToimJohtaja","Lentotehtava","LentotehtavaMuu","KaytettavaIlmaAlus","Virve","VHF","Lentokorkeus","ToimintaAlue","NakoJaLentoesteet","Ihmisjoukko","Vesistot","Signaalihairiot","Lampotila","Tuuli","SadeSumu","Valoisuus",
+  "TehtavaNimi","Paikka","Paivamaara","Kellonaika","GPS","KaukoOhjaaja","Tahystaja","PelToimJohtaja","Lentotehtava","LentotehtavaMuu","KaytettavaIlmaAlus","Virve","VHF","Lentokorkeus","ToimintaAlue",
   "RiskiTehtava","RiskiTehtavaPisteet","RiskiToimintaAlue","RiskiToimintaAluePisteet","RiskiFyysisetEsteet","RiskiFyysisetEsteetPisteet","RiskiIhmismaara","RiskiIhmismaaraPisteet","RiskiSignaalihairiot","RiskiSignaalihairiotPisteet","RiskiIlmatila","RiskiIlmatilaPisteet","RiskiTuuliPuuskatTurbulenssi","RiskiTuuliPuuskatTurbulenssiPisteet","RiskiLampotila","RiskiLampotilaPisteet","RiskiJaaminenKosteus","RiskiJaaminenKosteusPisteet","RiskiNakyvyysValoisuus","RiskiNakyvyysValoisuusPisteet","RiskiLaitteistonSoveltuvuus","RiskiLaitteistonSoveltuvuusPisteet","RiskiLentajanSoveltuvuus","RiskiLentajanSoveltuvuusPisteet",
   "Kokonaisriski","RiskienVahentaminen","MaksimiLentokorkeus","MinimiLentokorkeus","ToimintaHairiotilanteessa","PTJPaatos","Muistiinpanot"
  ];
@@ -2002,16 +2000,8 @@ function renderRiskReport(data){
  base += fieldRow("Ilma-alus", data.KaytettavaIlmaAlus);
  base += fieldRow("Virve", data.Virve);
  base += fieldRow("VHF", data.VHF);
- base += fieldRow("Lentokorkeus (m)", data.Lentokorkeus);
  base += fieldRow("Toiminta-alue", data.ToimintaAlue);
- base += fieldRow("Näkö- ja lentoesteet", data.NakoJaLentoesteet);
- base += fieldRow("Ihmisjoukko", data.Ihmisjoukko);
- base += fieldRow("Vesistöt", data.Vesistot);
- base += fieldRow("Signaalihäiriöt", data.Signaalihairiot);
- base += fieldRow("Lämpötila (°C)", data.Lampotila);
- base += fieldRow("Tuuli (m/s)", data.Tuuli);
- base += fieldRow("Sade/sumu", data.SadeSumu);
- base += fieldRow("Valoisuus", data.Valoisuus);
+ base += fieldRow("Lentokorkeus", data.Lentokorkeus);
 
  const risks = [
   ["1. Tehtävä", data.RiskiTehtava, data.RiskiTehtavaPisteet],
@@ -2045,78 +2035,65 @@ function renderRiskReport(data){
 
 function renderPlanReport(data){
  if(!data) return section("Lentosuunnitelma", "Ei tietoja.", "", "plan");
-
+ const used = ["TehtavaNimi","Paikka","Paivamaara","Kellonaika","GPS","KaukoOhjaaja","Tahystaja","PelToimJohtaja","Lentotehtava","LentotehtavaMuu","KaytettavaIlmaAlus","Virve","VHF","ToimintaAlue","Operaatiomalli","LentosuunnitelmaVapaaTeksti","MaksimiLentokorkeus","MinimiLentokorkeus","Lahtopaikka","Laskupaikka","LahtoLaskuGPS","Vara1","Hata1","Vara2","Hata2","ToiminnanAlkaminen","Nousu1","Lasku1","Nousu2","Lasku2","Nousu3","Lasku3","Nousu4","Lasku4","ToiminnanPaattyminen","LentominuutitYhteensa","Muistiinpanot"];
  let rows = "";
  rows += fieldRow("Paikka", data.Paikka);
  rows += fieldRow("Päivämäärä", data.Paivamaara);
  rows += fieldRow("Kellonaika", data.Kellonaika);
- rows += fieldRow("GPS", data.GPS);
  rows += fieldRow("Kauko-ohjaaja", data.KaukoOhjaaja);
  rows += fieldRow("Tähystäjä", data.Tahystaja);
- rows += fieldRow("Pel.toim.joht.", data.PelToimJohtaja);
- rows += fieldRow("Lentotehtävä", [data.Lentotehtava, data.LentotehtavaMuu].filter(Boolean).join(" / "));
- rows += fieldRow("Lentokorkeus", data.Lentokorkeus);
- rows += fieldRow("Toiminta-alue", data.ToimintaAlue);
- rows += fieldRow("Käytettävä ilma-alus", data.KaytettavaIlmaAlus);
- rows += fieldRow("Viestivälineet ja taajuudet", ["Virve " + (data.Virve || "-"), "VHF " + (data.VHF || "-")].join(" / "));
-
- rows += fieldRow("Valitse", data.Operaatiomalli);
+ rows += fieldRow("Ilma-alus", data.KaytettavaIlmaAlus);
+ rows += fieldRow("Virve", data.Virve);
+ rows += fieldRow("VHF", data.VHF);
+ rows += fieldRow("Operaatiomalli", data.Operaatiomalli);
  rows += fieldRow("Vapaa teksti", data.LentosuunnitelmaVapaaTeksti);
-
  rows += fieldRow("Maksimi lentokorkeus", data.MaksimiLentokorkeus);
  rows += fieldRow("Minimi lentokorkeus", data.MinimiLentokorkeus);
-
  rows += fieldRow("Lähtöpaikka", data.Lahtopaikka);
  rows += fieldRow("Laskupaikka", data.Laskupaikka);
- rows += fieldRow("Lähtöpaikan GPS", data.LahtoLaskuGPS);
- rows += fieldRow("Laskupaikan GPS", data.LahtoLaskuGPS);
+ rows += fieldRow("GPS", data.LahtoLaskuGPS);
  rows += fieldRow("VARA1", data.Vara1);
  rows += fieldRow("HÄTÄ1", data.Hata1);
  rows += fieldRow("VARA2", data.Vara2);
  rows += fieldRow("HÄTÄ2", data.Hata2);
-
- rows += fieldRow("TOIMINNAN ALKAMINEN", data.ToiminnanAlkaminen);
- rows += fieldRow("TOIMINNAN PÄÄTTYMINEN", data.ToiminnanPaattyminen);
+ rows += fieldRow("Toiminnan alkaminen", data.ToiminnanAlkaminen);
+ rows += fieldRow("Toiminnan päättyminen", data.ToiminnanPaattyminen);
+ rows += fieldRow("Lentominuutit yhteensä", data.LentominuutitYhteensa);
+ rows += fieldRow("Muistiinpanot", data.Muistiinpanot);
 
  const times = [
-  ["1.", data.Nousu1, data.Lasku1],
-  ["2.", data.Nousu2, data.Lasku2],
-  ["3.", data.Nousu3, data.Lasku3],
-  ["4.", data.Nousu4, data.Lasku4]
+  ["1", data.Nousu1, data.Lasku1],
+  ["2", data.Nousu2, data.Lasku2],
+  ["3", data.Nousu3, data.Lasku3],
+  ["4", data.Nousu4, data.Lasku4]
  ];
- const timeTable = `<table class="report-table"><thead><tr><th></th><th>YLÖS</th><th>ALAS</th></tr></thead><tbody>` +
+ const timeTable = `<table class="report-table"><thead><tr><th></th><th>Ylös</th><th>Alas</th></tr></thead><tbody>` +
    times.map(r=>`<tr><td>${escHtml(r[0])}</td><td>${escHtml(r[1]||"")}</td><td>${escHtml(r[2]||"")}</td></tr>`).join("") +
    `</tbody></table>`;
-
- rows += fieldRow("LENTOMINUUTIT YHTEENSÄ", data.LentominuutitYhteensa);
- rows += fieldRow("MUUTA / MUISTIINPANOJA", data.Muistiinpanot);
 
  return section("Lentosuunnitelma", grid(rows) + timeTable, "", "plan");
 }
 
 function renderLogReport(data){
  if(!data) return section("Lentopäiväkirja", "Ei tietoja.", "", "log");
-
+ const used = ["TehtavaNimi","LennonPaivamaara","LennonLahtoJaLaskupaikka","GPS","IlmaAluksenPaallikko","IlmaAluksenValmistajaJaMalli","AlkamisAika","PaattymisAika","VLOS","EVLOS","BVLOS","Maksimilentokorkeus","LahempanaKuin50mIhmisjoukosta","LentotehtavanLuonne","ErityisetTapahtumat"];
  let rows = "";
  rows += fieldRow("Lennon päivämäärä", data.LennonPaivamaara);
  rows += fieldRow("Lennon lähtö- ja laskupaikka", data.LennonLahtoJaLaskupaikka);
- rows += fieldRow("Lennon lähtö- ja laskupaikan GPS", data.GPS);
+ rows += fieldRow("GPS", data.GPS);
  rows += fieldRow("Ilma-aluksen päällikkö", data.IlmaAluksenPaallikko);
- rows += fieldRow("Ilma-aluksen tai ilma-alusjärjestelmän valmistaja ja malli", data.IlmaAluksenValmistajaJaMalli);
+ rows += fieldRow("Ilma-aluksen valmistaja ja malli", data.IlmaAluksenValmistajaJaMalli);
  rows += fieldRow("Alkamisaika", data.AlkamisAika);
  rows += fieldRow("Päättymisaika", data.PaattymisAika);
-
+ rows += fieldRow("Maksimilentokorkeus", data.Maksimilentokorkeus);
+ rows += fieldRow("Lähempänä kuin 50 m ihmisjoukosta", data.LahempanaKuin50mIhmisjoukosta);
+ rows += fieldRow("Lentotehtävän luonne", data.LentotehtavanLuonne);
+ rows += fieldRow("Erityiset tapahtumat", data.ErityisetTapahtumat);
  const checks = `<div class="checkreport">
    ${checkLine("VLOS – näköyhteydessä lennättäminen", data.VLOS)}
    ${checkLine("EVLOS – laajennettu näköyhteys tähystäjän avulla", data.EVLOS)}
    ${checkLine("BVLOS – näköyhteyden ulkopuolella lennättäminen", data.BVLOS)}
  </div>`;
-
- rows += fieldRow("Maksimilentokorkeus", data.Maksimilentokorkeus);
- rows += fieldRow("Lennetty lähempänä kuin 50 metrin etäisyydellä ihmisjoukosta", data.LahempanaKuin50mIhmisjoukosta);
- rows += fieldRow("Lentotehtävän luonne", data.LentotehtavanLuonne);
- rows += fieldRow("Muut lennolla sattuneet erityiset tapahtumat", data.ErityisetTapahtumat);
-
  return section("Lentopäiväkirja", grid(rows) + checks, "", "log");
 }
 
