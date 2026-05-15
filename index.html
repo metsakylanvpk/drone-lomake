@@ -480,7 +480,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta weather-ms-123-2 final-lock</div>
+<div class="title">VPK UAS – beta weather-ms-12b3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -901,6 +901,18 @@ const riskMap={"EI RISKIÄ":0,"MATALA":1,"KESKI":3,"KORKEA":5};
 function $(id){return document.getElementById(id);}
 function val(id){return $(id)?$(id).value:"";}
 function isChecked(id){return $(id) ? $(id).checked : false;}
+
+function firstValue(obj, keys, fallback){
+ for(const key of keys){
+   if(obj && Object.prototype.hasOwnProperty.call(obj, key)){
+     const v = obj[key];
+     if(v !== null && typeof v !== "undefined" && String(v) !== ""){
+       return v;
+     }
+   }
+ }
+ return fallback || "";
+}
 function safe(s){return (s||"").trim().replace(/[\\\\/:*?"<>|]/g,"").replace(/\\s+/g,"_")||"Paikka";}
 function gpsText(){return val("planStartGps") || "Ei haettu";}
 function aircraftKey(){return safe(val("aircraft")||val("startAircraft")).replace("DJI_","");}
@@ -2260,19 +2272,6 @@ window.loadTasks = loadTasks;
 
 
 
-
-
-function firstValue(obj, keys, fallback){
- for(const key of keys){
-   if(obj && Object.prototype.hasOwnProperty.call(obj, key)){
-     const v = obj[key];
-     if(v !== null && typeof v !== "undefined" && String(v) !== ""){
-       return v;
-     }
-   }
- }
- return fallback || "";
-}
 
 function setVal(id, value){
  const el = $(id);
