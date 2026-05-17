@@ -480,7 +480,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta weather-ms-10c3-2 final-lock</div>
+<div class="title">VPK UAS – beta weather-ms-10d3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -902,6 +902,16 @@ function $(id){return document.getElementById(id);}
 function val(id){return $(id)?$(id).value:"";}
 function isChecked(id){return $(id) ? $(id).checked : false;}
 
+
+function toDateInputValue(value){
+ const s = String(value || "");
+ const mIso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+ if(mIso) return `${mIso[1]}-${mIso[2]}-${mIso[3]}`;
+ const mFi = s.match(/^(\d{2})-(\d{2})-(\d{4})/);
+ if(mFi) return `${mFi[3]}-${mFi[2]}-${mFi[1]}`;
+ return s;
+}
+
 function firstValue(obj, keys, fallback){
  for(const key of keys){
    if(obj && Object.prototype.hasOwnProperty.call(obj, key)){
@@ -1056,12 +1066,14 @@ function sync(){
  $("logAircraft").value=val("aircraft");
  $("logGps").value=gpsText();
 
- if($("operationStart") && $("logStart") && val("operationStart")){
-   $("logStart").value = val("operationStart");
+ if($("operationStart") && $("logStart")){
+   if(val("operationStart") && !val("logStart")) $("logStart").value = val("operationStart");
+   if(val("logStart") && !val("operationStart")) $("operationStart").value = val("logStart");
  }
 
- if($("logEnd") && val("logEnd") && $("operationEnd")){
-   $("operationEnd").value = val("logEnd");
+ if($("operationEnd") && $("logEnd")){
+   if(val("operationEnd") && !val("logEnd")) $("logEnd").value = val("operationEnd");
+   if(val("logEnd") && !val("operationEnd")) $("operationEnd").value = val("logEnd");
  }
 
  if($("logMaxAlt")) $("logMaxAlt").value=val("maxAlt")||"";
@@ -1153,6 +1165,7 @@ let lastBackendSave = 0;
 let currentTaskStatus = "Kesken";
 let currentTaskName = "";
 let taskClosing = false;
+let syncingTimes = false;
 
 function setSaveStatus(text, cls){
  const el=$("saveStatus");
@@ -1162,12 +1175,12 @@ function setSaveStatus(text, cls){
 
  // Jos status ei ole enää odotustilassa, poistetaan mahdollinen koko ruudun tallennusoverlay.
  // Tämä estää tilanteen, jossa yläpalkki sanoo tallennetuksi mutta overlay jää näkyviin.
- if(cls === "ok" || cls === "err"){
+ if((cls === "ok" || cls === "err") && !taskClosing){
    try{ hideLoading(); }catch(e){}
  }
 
  // Myös "ei voitu varmistaa" on käyttöliittymän kannalta valmis tila, ei ikuinen lataus.
- if(cls === "wait" && String(text || "").toLowerCase().indexOf("ei voitu varmistaa") !== -1){
+ if(cls === "wait" && String(text || "").toLowerCase().indexOf("ei voitu varmistaa") !== -1 && !taskClosing){
    try{ hideLoading(); }catch(e){}
  }
 }
@@ -1480,11 +1493,14 @@ async function saveToBackend(toiminto, tila){
 }
 
 function queueBackendSave(){
+ if(taskClosing) return;
+ if(!currentTaskName) return;
+ if(!val("date") || !val("time") || !val("place")) return;
  clearTimeout(backendSaveTimer);
  backendSaveTimer = setTimeout(()=>saveToBackend("Autosave"), 1500);
 }
 
-async function finishTask(){
+async async function finishTask(){
  if(taskClosing) return;
  taskClosing = true;
  clearTimeout(backendSaveTimer);
@@ -1536,7 +1552,7 @@ async function finishTask(){
  }
 }
 
-async function cancelTask(){
+async async function cancelTask(){
  if(taskClosing) return;
  taskClosing = true;
  clearTimeout(backendSaveTimer);
@@ -2069,7 +2085,7 @@ function renderPlanReport(data){
  rows += fieldRow("Tähystäjä", data.Tahystaja);
  rows += fieldRow("Pel.toim.joht.", data.PelToimJohtaja);
  rows += fieldRow("Lentotehtävä", [data.Lentotehtava, data.LentotehtavaMuu].filter(Boolean).join(" / "));
- rows += fieldRow("Lentokorkeus (m)", data.Lentokorkeus);
+ rows += fieldRow("Lentokorkeus (m)", data.Lentokorkeus || data.MaksimiLentokorkeus || "");
  rows += fieldRow("Toiminta-alue", data.ToimintaAlue);
  rows += fieldRow("Käytettävä ilma-alus", data.KaytettavaIlmaAlus);
  rows += fieldRow("Viestivälineet ja taajuudet", ["Virve " + (data.Virve || "-"), "VHF " + (data.VHF || "-")].join(" / "));
@@ -2130,9 +2146,7 @@ function renderLogReport(data){
  rows += fieldRow("Maksimilentokorkeus", data.Maksimilentokorkeus);
  rows += fieldRow("Lennetty lähempänä kuin 50 metrin etäisyydellä ihmisjoukosta", data.LahempanaKuin50mIhmisjoukosta);
  rows += fieldRow("Lentotehtävän luonne", data.LentotehtavanLuonne);
- rows += fieldRow("Muut lennolla sattuneet erityiset tapahtumat", data.ErityisetTapahtumat);
-
- return section("Lentopäiväkirja", grid(rows) + checks, "", "log");
+ return section("Lentopäiväkirja", grid(rows) + checks + grid(fieldRow("Muut lennolla sattuneet erityiset tapahtumat", data.ErityisetTapahtumat)), "", "log");
 }
 
 function renderFullReport(r){
@@ -2302,12 +2316,12 @@ function loadReportToForm(report){
  taskClosing = false;
 
  // Aloitus ja perustiedot
- setVal("startDate", t.Paivamaara || r.Paivamaara || p.Paivamaara || "");
+ setVal("startDate", toDateInputValue(t.Paivamaara || r.Paivamaara || p.Paivamaara || ""));
  setVal("startTime", t.Kellonaika || r.Kellonaika || p.Kellonaika || "");
  setVal("startPlace", t.Paikka || r.Paikka || p.Paikka || "");
  setVal("startAircraft", t.KaytettavaIlmaAlus || r.KaytettavaIlmaAlus || p.KaytettavaIlmaAlus || "DJI Matrice 4TD");
 
- setVal("date", t.Paivamaara || r.Paivamaara || p.Paivamaara || "");
+ setVal("date", toDateInputValue(t.Paivamaara || r.Paivamaara || p.Paivamaara || ""));
  setVal("time", t.Kellonaika || r.Kellonaika || p.Kellonaika || "");
  setVal("place", t.Paikka || r.Paikka || p.Paikka || "");
  setVal("riskGps", t.GPS || r.GPS || p.GPS || "");
@@ -2452,6 +2466,21 @@ function loadReportToForm(report){
  updateName();
  setupOpenLogButton();
  setupTimeButtons();
+ const timePairs = [
+   ["operationStart","logStart"],
+   ["logStart","operationStart"],
+   ["operationEnd","logEnd"],
+   ["logEnd","operationEnd"]
+ ];
+ timePairs.forEach(([a,b])=>{
+   const el=$(a);
+   if(el && !el.dataset.timePairBound){
+     el.dataset.timePairBound="1";
+     el.addEventListener("change",()=>{ syncTimePair(a,b); sync(); autosave(); if(!taskClosing) queueBackendSave(); });
+     el.addEventListener("input",()=>{ syncTimePair(a,b); sync(); autosave(); if(!taskClosing) queueBackendSave(); });
+   }
+ });
+
  setupComboBoxes();
  setupMultiSelectDropdowns();
  setupChecklistSelectAll();
@@ -2501,6 +2530,16 @@ function setTimeNow(id){
  calcMinutes();
  autosave();
  if(!taskClosing) queueBackendSave();
+}
+
+
+function syncTimePair(sourceId, targetId){
+ if(syncingTimes) return;
+ const source=$(sourceId), target=$(targetId);
+ if(!source || !target) return;
+ syncingTimes = true;
+ target.value = source.value || "";
+ syncingTimes = false;
 }
 
 function setupTimeButtons(){
@@ -2686,6 +2725,21 @@ document.addEventListener("DOMContentLoaded",function(){
  const cancelTaskBtn=$("cancelTaskBtn"); if(cancelTaskBtn) cancelTaskBtn.addEventListener("click",cancelTask);
  setupOpenLogButton();
  setupTimeButtons();
+ const timePairs = [
+   ["operationStart","logStart"],
+   ["logStart","operationStart"],
+   ["operationEnd","logEnd"],
+   ["logEnd","operationEnd"]
+ ];
+ timePairs.forEach(([a,b])=>{
+   const el=$(a);
+   if(el && !el.dataset.timePairBound){
+     el.dataset.timePairBound="1";
+     el.addEventListener("change",()=>{ syncTimePair(a,b); sync(); autosave(); if(!taskClosing) queueBackendSave(); });
+     el.addEventListener("input",()=>{ syncTimePair(a,b); sync(); autosave(); if(!taskClosing) queueBackendSave(); });
+   }
+ });
+
  setupComboBoxes();
  setupMultiSelectDropdowns();
  setupChecklistSelectAll();
