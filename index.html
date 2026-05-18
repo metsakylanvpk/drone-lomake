@@ -1613,6 +1613,37 @@ function queueBackendSave(){
  backendSaveTimer = setTimeout(()=>saveToBackend("Autosave"), 1500);
 }
 
+async 
+function waitMs(ms){
+ return new Promise(resolve=>setTimeout(resolve, ms));
+}
+
+async function prepareFinalSave(){
+ // Suljetaan mahdollinen autosave-ajastin, jotta lopullisen tallennuksen kanssa ei tule päällekkäistä savea.
+ clearTimeout(backendSaveTimer);
+
+ // Pakotetaan viimeiset selaimen input/change-eventit ehtimään valmiiksi.
+ await waitMs(80);
+
+ // Synkataan kellonajat molempiin suuntiin vielä ennen payloadin rakentamista.
+ if($("operationStart") && $("logStart")){
+   if(val("operationStart") && !val("logStart")) $("logStart").value = val("operationStart");
+   if(val("logStart") && !val("operationStart")) $("operationStart").value = val("logStart");
+ }
+ if($("operationEnd") && $("logEnd")){
+   if(val("operationEnd") && !val("logEnd")) $("logEnd").value = val("operationEnd");
+   if(val("logEnd") && !val("operationEnd")) $("operationEnd").value = val("logEnd");
+ }
+
+ sync();
+ calcMinutes();
+ calcRisk();
+ autosave();
+
+ // Vielä yksi pieni tick, jotta ohjelmallisesti asetetut arvot ovat varmasti DOMissa ennen buildSections().
+ await waitMs(50);
+}
+
 async function finishTask(){
  if(taskClosing || taskReopening) return;
  taskClosing = true;
@@ -1628,10 +1659,7 @@ async function finishTask(){
  if(cancelBtn) cancelBtn.disabled = true;
 
  try{
-   sync();
-   calcMinutes();
-   calcRisk();
-   autosave();
+   await prepareFinalSave();
 
    currentTaskStatus = "Valmis";
    const ok = await saveToBackend("FinalSave", "Valmis");
@@ -1680,10 +1708,7 @@ async function cancelTask(){
  if(finishBtn) finishBtn.disabled = true;
 
  try{
-   sync();
-   calcMinutes();
-   calcRisk();
-   autosave();
+   await prepareFinalSave();
 
    currentTaskStatus = "Keskeytetty";
    const ok = await saveToBackend("CancelTask", "Keskeytetty");
