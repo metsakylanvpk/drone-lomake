@@ -491,7 +491,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS3-2 final-lock</div>
+<div class="title">VPK UAS – beta weather-ms-10j-reopenfix3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -1276,7 +1276,6 @@ let lastBackendSave = 0;
 let currentTaskStatus = "Kesken";
 let currentTaskName = "";
 let taskClosing = false;
-let taskReopening = false;
 let syncingTimes = false;
 let loadedWindValue = "";
 
@@ -1613,39 +1612,8 @@ function queueBackendSave(){
  backendSaveTimer = setTimeout(()=>saveToBackend("Autosave"), 1500);
 }
 
-async 
-function waitMs(ms){
- return new Promise(resolve=>setTimeout(resolve, ms));
-}
-
-async function prepareFinalSave(){
- // Suljetaan mahdollinen autosave-ajastin, jotta lopullisen tallennuksen kanssa ei tule päällekkäistä savea.
- clearTimeout(backendSaveTimer);
-
- // Pakotetaan viimeiset selaimen input/change-eventit ehtimään valmiiksi.
- await waitMs(80);
-
- // Synkataan kellonajat molempiin suuntiin vielä ennen payloadin rakentamista.
- if($("operationStart") && $("logStart")){
-   if(val("operationStart") && !val("logStart")) $("logStart").value = val("operationStart");
-   if(val("logStart") && !val("operationStart")) $("operationStart").value = val("logStart");
- }
- if($("operationEnd") && $("logEnd")){
-   if(val("operationEnd") && !val("logEnd")) $("logEnd").value = val("operationEnd");
-   if(val("logEnd") && !val("operationEnd")) $("operationEnd").value = val("logEnd");
- }
-
- sync();
- calcMinutes();
- calcRisk();
- autosave();
-
- // Vielä yksi pieni tick, jotta ohjelmallisesti asetetut arvot ovat varmasti DOMissa ennen buildSections().
- await waitMs(50);
-}
-
 async function finishTask(){
- if(taskClosing || taskReopening) return;
+ if(taskClosing) return;
  taskClosing = true;
  clearTimeout(backendSaveTimer);
 
@@ -1659,7 +1627,10 @@ async function finishTask(){
  if(cancelBtn) cancelBtn.disabled = true;
 
  try{
-   await prepareFinalSave();
+   sync();
+   calcMinutes();
+   calcRisk();
+   autosave();
 
    currentTaskStatus = "Valmis";
    const ok = await saveToBackend("FinalSave", "Valmis");
@@ -1694,7 +1665,7 @@ async function finishTask(){
 }
 
 async function cancelTask(){
- if(taskClosing || taskReopening) return;
+ if(taskClosing) return;
  taskClosing = true;
  clearTimeout(backendSaveTimer);
 
@@ -1708,7 +1679,10 @@ async function cancelTask(){
  if(finishBtn) finishBtn.disabled = true;
 
  try{
-   await prepareFinalSave();
+   sync();
+   calcMinutes();
+   calcRisk();
+   autosave();
 
    currentTaskStatus = "Keskeytetty";
    const ok = await saveToBackend("CancelTask", "Keskeytetty");
@@ -2660,10 +2634,8 @@ function loadReportToForm(report){
 
 async function reopenTask(tehtavaNimi){
  if(!tehtavaNimi) return;
- if(taskReopening) return;
  if(!confirm("Avataanko tehtävä muokattavaksi?\n\n"+tehtavaNimi+"\n\nTila muutetaan Kesken-tilaan ja tallennetut tiedot ladataan lomakkeelle.")) return;
  const status=$("adminStatus");
- taskReopening = true;
  try{
   showLoading("Avataan tehtävää muokattavaksi...");
   if(status) status.textContent="Avataan tehtävää muokattavaksi...";
@@ -2690,8 +2662,6 @@ async function reopenTask(tehtavaNimi){
  }catch(err){
   hideLoading();
   if(status) status.textContent="Virhe uudelleen avaamisessa: "+(err.message||err);
- }finally{
-  taskReopening = false;
  }
 }
 
