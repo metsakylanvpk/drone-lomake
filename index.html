@@ -480,7 +480,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta weather-ms-10d3-2 final-lock</div>
+<div class="title">VPK UAS – beta weather-ms-10e3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -1500,7 +1500,7 @@ function queueBackendSave(){
  backendSaveTimer = setTimeout(()=>saveToBackend("Autosave"), 1500);
 }
 
-async async function finishTask(){
+async function finishTask(){
  if(taskClosing) return;
  taskClosing = true;
  clearTimeout(backendSaveTimer);
@@ -1552,7 +1552,7 @@ async async function finishTask(){
  }
 }
 
-async async function cancelTask(){
+async function cancelTask(){
  if(taskClosing) return;
  taskClosing = true;
  clearTimeout(backendSaveTimer);
