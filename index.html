@@ -443,6 +443,17 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 }
 
 </style>
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VPK UAS">
+<meta name="application-name" content="VPK UAS">
+
 </head>
 <body>
 <div id="loadingOverlay" class="loadingoverlay">
@@ -480,7 +491,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta weather-ms-10j3-2 final-lock</div>
+<div class="title">VPK UAS3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -1265,6 +1276,7 @@ let lastBackendSave = 0;
 let currentTaskStatus = "Kesken";
 let currentTaskName = "";
 let taskClosing = false;
+let taskReopening = false;
 let syncingTimes = false;
 let loadedWindValue = "";
 
@@ -1602,7 +1614,7 @@ function queueBackendSave(){
 }
 
 async function finishTask(){
- if(taskClosing) return;
+ if(taskClosing || taskReopening) return;
  taskClosing = true;
  clearTimeout(backendSaveTimer);
 
@@ -1654,7 +1666,7 @@ async function finishTask(){
 }
 
 async function cancelTask(){
- if(taskClosing) return;
+ if(taskClosing || taskReopening) return;
  taskClosing = true;
  clearTimeout(backendSaveTimer);
 
@@ -2623,8 +2635,10 @@ function loadReportToForm(report){
 
 async function reopenTask(tehtavaNimi){
  if(!tehtavaNimi) return;
+ if(taskReopening) return;
  if(!confirm("Avataanko tehtävä muokattavaksi?\n\n"+tehtavaNimi+"\n\nTila muutetaan Kesken-tilaan ja tallennetut tiedot ladataan lomakkeelle.")) return;
  const status=$("adminStatus");
+ taskReopening = true;
  try{
   showLoading("Avataan tehtävää muokattavaksi...");
   if(status) status.textContent="Avataan tehtävää muokattavaksi...";
@@ -2648,10 +2662,11 @@ async function reopenTask(tehtavaNimi){
   hideLoading();
   if(status) status.textContent="Tehtävä avattu muokattavaksi: "+tehtavaNimi;
   location.hash="#risk";
-  await loadTasks();
  }catch(err){
   hideLoading();
   if(status) status.textContent="Virhe uudelleen avaamisessa: "+(err.message||err);
+ }finally{
+  taskReopening = false;
  }
 }
 
