@@ -480,7 +480,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta weather-ms-10e3-2 final-lock</div>
+<div class="title">VPK UAS – beta weather-ms-10g3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -1818,6 +1818,30 @@ function labelize(key){
   .replace(/_/g, " ");
 }
 
+
+function taskNameDateRaw(name){
+ const m = String(name || "").match(/^(\d{4}-\d{2}-\d{2})_/);
+ return m ? m[1] : "";
+}
+
+function taskNameTimeRaw(name){
+ const m = String(name || "").match(/^\d{4}-\d{2}-\d{2}_(\d{4})_/);
+ return m ? m[1].slice(0,2) + ":" + m[1].slice(2,4) : "";
+}
+
+function taskListDisplayDate(task){
+ const fromName = taskNameDateRaw(task.TehtavaNimi);
+ if(fromName) return formatDateFI(fromName);
+ return formatDateFI(task.Paivamaara || "");
+}
+
+function taskListSortValue(task){
+ const n = String(task.TehtavaNimi || "");
+ const d = taskNameDateRaw(n) || toDateInputValue(task.Paivamaara || "");
+ const t = taskNameTimeRaw(n) || String(task.Kellonaika || "");
+ return (d + " " + t).trim();
+}
+
 function statusBadgeClass(status){
  const s = String(status || "").toLowerCase();
  if(s.indexOf("valmis") !== -1) return "badge valmis";
@@ -1847,7 +1871,15 @@ function formatDateFI(value){
  if(value == null) return "";
  const s = String(value);
 
- // ISO tai YYYY-MM-DD -> DD-MM-YYYY
+ // Jos Sheets/API palauttaa ISO UTC -ajan, muunnetaan selaimen paikalliseen päivään.
+ if(s.includes("T")){
+   const d = new Date(s);
+   if(!isNaN(d.getTime())){
+     return `${String(d.getDate()).padStart(2,"0")}-${String(d.getMonth()+1).padStart(2,"0")}-${d.getFullYear()}`;
+   }
+ }
+
+ // YYYY-MM-DD -> DD-MM-YYYY
  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
  if(m){
    return `${m[3]}-${m[2]}-${m[1]}`;
@@ -2171,7 +2203,7 @@ async function loadTasks(){
 
    if(!data.ok) throw new Error(data.error || "Tehtävälistan haku epäonnistui");
 
-   const tasks = data.tasks || [];
+   const tasks = (data.tasks || []).slice().sort((a,b)=>taskListSortValue(b).localeCompare(taskListSortValue(a)));
    if(status) status.textContent = "Tehtäviä löytyi: " + tasks.length;
    hideLoading();
 
@@ -2184,7 +2216,7 @@ async function loadTasks(){
      list.innerHTML = tasks.map(t=>{
        const name = t.TehtavaNimi || "";
        const tila = t.Tila || "Kesken";
-       const paiva = t.Paivamaara || "";
+       const paiva = taskListDisplayDate(t);
        const aika = t.Kellonaika || "";
        const paikka = t.Paikka || "";
        const drone = t.KaytettavaIlmaAlus || "";
@@ -2392,7 +2424,7 @@ function loadReportToForm(report){
  setVal("signal", r.Signaalihairiot || "Ei");
  setMsValue("signal", r.Signaalihairiot || "Ei");
  setVal("temp", firstValue(r, ["Lampotila","Lämpötila","Lämpötila (°C)","LampotilaC","Temperature","temperature_2m"], val("temp")));
- setVal("wind", firstValue(r, ["Tuuli","Tuuli (m/s)","TuuliMS","Tuuli_ms","Wind","wind_speed_10m"], val("wind")));
+ setVal("wind", firstValue(r, ["Tuuli","Tuuli (m/s)","TuuliMS","Tuuli_ms","Wind","wind_speed_10m"], firstValue(p, ["Tuuli","Tuuli (m/s)","TuuliMS","Tuuli_ms","Wind","wind_speed_10m"], val("wind"))));
  setVal("rain", r.SadeSumu || "Ei");
  setVal("light", r.Valoisuus || "Päivä");
 
