@@ -1602,65 +1602,8 @@ function buildSections(){
  };
 }
 
-async 
-function buildSavePayload(toiminto, tila){
- ensureActiveTaskFields();
-
- if(tila) currentTaskStatus = tila;
-
- return {
-  action:"saveAll",
-  tehtavaNimi:taskName(),
-  toiminto:toiminto||"Autosave",
-  tila: currentTaskStatus || "Kesken",
-  sections:buildSections(),
-  deviceInfo:navigator.platform || "",
-  browserInfo:navigator.userAgent || ""
- };
-}
-
-async function postSavePayload(payload, showSaveOverlay){
- if(showSaveOverlay) showLoading("Tallennetaan Google Sheetiin...");
- setSaveStatus("Tallennetaan Google Sheetiin...", "wait");
-
- try{
-  const res = await fetch(API_URL, {
-    method:"POST",
-    headers:{"Content-Type":"text/plain;charset=utf-8"},
-    body:JSON.stringify(payload)
-  });
-  const text = await res.text();
-  let json = {};
-  try{ json = JSON.parse(text); }catch(e){ json={ok:res.ok, raw:text}; }
-
-  if(json.ok){
-    lastBackendSave = Date.now();
-    if(showSaveOverlay) hideLoading();
-    setSaveStatus("Tallennettu Google Sheetiin " + new Date().toLocaleTimeString("fi-FI"), "ok");
-    return true;
-  }
-
-  throw new Error(json.error || "Tallennus epäonnistui");
- }catch(err){
-  try{
-    await fetch(API_URL, {
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(payload)
-    });
-    if(showSaveOverlay) hideLoading();
-    setSaveStatus("Tallennus lähetetty (vastausta ei voitu varmistaa). Tarkista Sheet tarvittaessa.", "wait");
-    return true;
-  }catch(err2){
-    if(showSaveOverlay) hideLoading();
-    setSaveStatus("Tallennusvirhe: tiedot tallessa laitteella. Yritä uudelleen.", "err");
-    return false;
-  }
- }
-}
-
 async function saveToBackend(toiminto, tila){
+ ensureActiveTaskFields();
  if(!val("date") || !val("time") || !val("place")){
   setSaveStatus("Ei tallennettu: aloita tehtävä ensin", "err");
   return false;
@@ -1672,38 +1615,84 @@ async function saveToBackend(toiminto, tila){
 
  const isAutosave = (toiminto || "Autosave") === "Autosave";
 
- // Jos tallennus on jo käynnissä, autosave ei saa lähteä rinnakkain.
- // Merkitään vain, että nykyisen jälkeen tarvitaan yksi uusi autosave uusimmalla lomakedatalla.
  if(saveInProgress){
   if(isAutosave){
     saveQueuedAfterCurrent = true;
     setSaveStatus("Tallennus jonossa...", "wait");
     return true;
   }
-
-  // Manuaalinen/final-save odottaa ensin aiemman tallennuksen valmistumisen.
-  const previous = saveInProgress;
-  await previous;
+  await saveInProgress;
  }
 
+ if(tila) currentTaskStatus = tila;
+
  const showSaveOverlay = !isAutosave;
- const payload = buildSavePayload(toiminto, tila);
+ const payload = {
+  action:"saveAll",
+  tehtavaNimi:taskName(),
+  toiminto:toiminto||"Autosave",
+  tila: currentTaskStatus || "Kesken",
+  sections:buildSections(),
+  deviceInfo:navigator.platform || "",
+  browserInfo:navigator.userAgent || ""
+ };
 
  saveInProgress = (async()=>{
+  try{
    try{
-     const ok = await postSavePayload(payload, showSaveOverlay);
+    if(showSaveOverlay) showLoading("Tallennetaan Google Sheetiin...");
+    setSaveStatus("Tallennetaan Google Sheetiin...", "wait");
 
-     // Jos lomaketta muokattiin tallennuksen aikana, lähetetään yksi uusi autosave uusimmilla tiedoilla.
-     if(saveQueuedAfterCurrent && !taskClosing){
-       saveQueuedAfterCurrent = false;
-       const latestPayload = buildSavePayload("Autosave", currentTaskStatus || "Kesken");
-       await postSavePayload(latestPayload, false);
-     }
+    const res = await fetch(API_URL, {
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload)
+    });
 
-     return ok;
-   }finally{
-     saveInProgress = null;
+    const text = await res.text();
+    let json = {};
+    try{ json = JSON.parse(text); }catch(e){ json={ok:res.ok, raw:text}; }
+
+    if(json.ok){
+      lastBackendSave = Date.now();
+      if(showSaveOverlay) hideLoading();
+      setSaveStatus("Tallennettu Google Sheetiin " + new Date().toLocaleTimeString("fi-FI"), "ok");
+
+      if(saveQueuedAfterCurrent && !taskClosing){
+        saveQueuedAfterCurrent = false;
+        setTimeout(()=>saveToBackend("Autosave"), 0);
+      }
+
+      return true;
+    }
+
+    throw new Error(json.error || "Tallennus epäonnistui");
+   }catch(err){
+    try{
+      await fetch(API_URL, {
+        method:"POST",
+        mode:"no-cors",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body:JSON.stringify(payload)
+      });
+      if(showSaveOverlay) hideLoading();
+      setSaveStatus("Tallennus lähetetty (vastausta ei voitu varmistaa). Tarkista Sheet tarvittaessa.", "wait");
+
+      if(saveQueuedAfterCurrent && !taskClosing){
+        saveQueuedAfterCurrent = false;
+        setTimeout(()=>saveToBackend("Autosave"), 0);
+      }
+
+      return true;
+    }catch(err2){
+      if(showSaveOverlay) hideLoading();
+      setSaveStatus("Tallennusvirhe: tiedot tallessa laitteella. Yritä uudelleen.", "err");
+      return false;
+    }
    }
+  }finally{
+   saveInProgress = null;
+  }
  })();
 
  return await saveInProgress;
@@ -1715,6 +1704,110 @@ function queueBackendSave(){
  if(!val("date") || !val("time") || !val("place")) return;
  clearTimeout(backendSaveTimer);
  backendSaveTimer = setTimeout(()=>saveToBackend("Autosave"), 1500);
+}
+
+async function finishTask(){
+ if(taskClosing) return;
+ taskClosing = true;
+ clearTimeout(backendSaveTimer);
+
+ const finishBtn = $("finishTaskBtn");
+ const cancelBtn = $("cancelTaskBtn");
+
+ if(finishBtn){
+   finishBtn.disabled = true;
+   finishBtn.textContent = "Tallennetaan...";
+ }
+ if(cancelBtn) cancelBtn.disabled = true;
+
+ try{
+   sync();
+   calcMinutes();
+   calcRisk();
+   autosave();
+
+   currentTaskStatus = "Valmis";
+   const ok = await saveToBackend("FinalSave", "Valmis");
+
+   if(!ok){
+     throw new Error("Lopullinen tallennus epäonnistui");
+   }
+
+   try{
+     localStorage.removeItem("vpk_uas_" + taskName());
+     localStorage.removeItem("vpk_uas_last_task");
+     currentTaskName = "";
+   }catch(e){}
+
+   setSaveStatus("Tehtävä merkitty valmiiksi", "ok");
+   showLoading("Tehtävä tallennettu. Siirrytään uuteen tehtävään...");
+
+   setTimeout(()=>{
+     window.location.assign(window.location.origin + window.location.pathname + "?newtask=" + Date.now());
+   }, 1000);
+
+ }catch(err){
+   taskClosing = false;
+   if(finishBtn){
+     finishBtn.disabled = false;
+     finishBtn.textContent = "Päätä tehtävä ja tallenna";
+   }
+   if(cancelBtn) cancelBtn.disabled = false;
+   hideLoading();
+   setSaveStatus("Lopullinen tallennus epäonnistui: tarkista yhteys ja yritä uudelleen", "err");
+ }
+}
+
+async function cancelTask(){
+ if(taskClosing) return;
+ taskClosing = true;
+ clearTimeout(backendSaveTimer);
+
+ const cancelBtn = $("cancelTaskBtn");
+ const finishBtn = $("finishTaskBtn");
+
+ if(cancelBtn){
+   cancelBtn.disabled = true;
+   cancelBtn.textContent = "Tallennetaan...";
+ }
+ if(finishBtn) finishBtn.disabled = true;
+
+ try{
+   sync();
+   calcMinutes();
+   calcRisk();
+   autosave();
+
+   currentTaskStatus = "Keskeytetty";
+   const ok = await saveToBackend("CancelTask", "Keskeytetty");
+
+   if(!ok){
+     throw new Error("Keskeytyksen tallennus epäonnistui");
+   }
+
+   try{
+     localStorage.removeItem("vpk_uas_" + taskName());
+     localStorage.removeItem("vpk_uas_last_task");
+     currentTaskName = "";
+   }catch(e){}
+
+   setSaveStatus("Tehtävä merkitty keskeytetyksi", "ok");
+   showLoading("Tehtävä tallennettu keskeytetyksi. Siirrytään uuteen tehtävään...");
+
+   setTimeout(()=>{
+     window.location.assign(window.location.origin + window.location.pathname + "?newtask=" + Date.now());
+   }, 1000);
+
+ }catch(err){
+   taskClosing = false;
+   if(cancelBtn){
+     cancelBtn.disabled = false;
+     cancelBtn.textContent = "Keskeytä tehtävä ja tallenna";
+   }
+   if(finishBtn) finishBtn.disabled = false;
+   hideLoading();
+   setSaveStatus("Keskeytyksen tallennus epäonnistui: tarkista yhteys ja yritä uudelleen", "err");
+ }
 }
 
 function setupOpenLogButton(){
