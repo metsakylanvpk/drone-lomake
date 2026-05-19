@@ -442,27 +442,6 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
   border:none!important;
 }
 
-
-@media print{
-  .reportsection .reporthead,
-  .reportsection .head,
-  .reporthead,
-  .head{
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  .reportsection.task .reporthead,
-  .reportsection.task .head{background:#111827!important;color:#fff!important}
-  .reportsection.check .reporthead,
-  .reportsection.check .head{background:#374151!important;color:#fff!important}
-  .reportsection.risk .reporthead,
-  .reportsection.risk .head{background:#9a3412!important;color:#fff!important}
-  .reportsection.plan .reporthead,
-  .reportsection.plan .head{background:#0f766e!important;color:#fff!important}
-  .reportsection.log .reporthead,
-  .reportsection.log .head{background:#1e3a8a!important;color:#fff!important}
-}
-
 </style>
 
 <link rel="manifest" href="manifest.json">
@@ -512,7 +491,7 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
 </div>
 </div>
 <div class="top">
-<div class="title">VPK UAS – beta weather-ms-10j-reopenfix-finalflush-print3-2 final-lock</div>
+<div class="title">VPK UAS – beta weather-ms-10j-reopenfix3-2 final-lock</div>
 <div class="file" id="filename">Aloita tehtävä täyttämällä päivämäärä, aika, paikka ja drone</div>
 <div class="savestatus wait" id="saveStatus">Ei vielä tallennettu Google Sheetiin</div>
 <button class="mobilemenubtn" id="mobileMenuBtn" type="button">☰ Siirry osioon</button>
@@ -1633,20 +1612,6 @@ function queueBackendSave(){
  backendSaveTimer = setTimeout(()=>saveToBackend("Autosave"), 1500);
 }
 
-async 
-function waitMs(ms){
- return new Promise(resolve=>setTimeout(resolve, ms));
-}
-
-async function flushActiveFieldBeforeFinalSave(){
- // Pakottaa viimeksi muokatun input/select/textarea-kentän arvon committoitumaan ennen payloadin rakentamista.
- try{
-   const el = document.activeElement;
-   if(el && typeof el.blur === "function") el.blur();
- }catch(e){}
- await waitMs(120);
-}
-
 async function finishTask(){
  if(taskClosing) return;
  taskClosing = true;
@@ -1662,7 +1627,6 @@ async function finishTask(){
  if(cancelBtn) cancelBtn.disabled = true;
 
  try{
-   await flushActiveFieldBeforeFinalSave();
    sync();
    calcMinutes();
    calcRisk();
@@ -1715,7 +1679,6 @@ async function cancelTask(){
  if(finishBtn) finishBtn.disabled = true;
 
  try{
-   await flushActiveFieldBeforeFinalSave();
    sync();
    calcMinutes();
    calcRisk();
