@@ -442,6 +442,60 @@ button.secondary,.btn.secondary,.timebtn,.comboBtn{
   border:none!important;
 }
 
+
+/* PDF / tulostus: säilytä raporttiosioiden otsikkovärit */
+@media print{
+  *{
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .reportsection.task .reporthead,
+  .reportsection.task .head,
+  .reportsection.task h3:first-child{
+    background:#111827!important;
+    color:#fff!important;
+    padding:10px 12px!important;
+    border-radius:10px!important;
+  }
+
+  .reportsection.check .reporthead,
+  .reportsection.check .head,
+  .reportsection.check h3:first-child{
+    background:#374151!important;
+    color:#fff!important;
+    padding:10px 12px!important;
+    border-radius:10px!important;
+  }
+
+  .reportsection.risk .reporthead,
+  .reportsection.risk .head,
+  .reportsection.risk h3:first-child{
+    background:#9a3412!important;
+    color:#fff!important;
+    padding:10px 12px!important;
+    border-radius:10px!important;
+  }
+
+  .reportsection.plan .reporthead,
+  .reportsection.plan .head,
+  .reportsection.plan h3:first-child{
+    background:#0f766e!important;
+    color:#fff!important;
+    padding:10px 12px!important;
+    border-radius:10px!important;
+  }
+
+  .reportsection.log .reporthead,
+  .reportsection.log .head,
+  .reportsection.log h3:first-child{
+    background:#1e3a8a!important;
+    color:#fff!important;
+    padding:10px 12px!important;
+    border-radius:10px!important;
+  }
+}
+
 </style>
 
 <link rel="manifest" href="manifest.json">
@@ -1881,6 +1935,10 @@ function checkRecovery(){
        }catch(e){}
        if(modal) modal.style.display = "none";
        setSaveStatus("Aloitetaan uusi tyhjä tehtävä", "wait");
+       setTimeout(()=>{
+         location.hash = "#start";
+         window.scrollTo(0, 0);
+       }, 50);
      });
    }
 
