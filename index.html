@@ -1330,6 +1330,8 @@ let lastBackendSave = 0;
 let currentTaskStatus = "Kesken";
 let currentTaskName = "";
 let taskClosing = false;
+let saveInProgress = null;
+let saveQueuedAfterCurrent = false;
 let syncingTimes = false;
 let loadedWindValue = "";
 
@@ -1600,18 +1602,13 @@ function buildSections(){
  };
 }
 
-async function saveToBackend(toiminto, tila){
+async 
+function buildSavePayload(toiminto, tila){
  ensureActiveTaskFields();
- if(!val("date") || !val("time") || !val("place")){
-  setSaveStatus("Ei tallennettu: aloita tehtävä ensin", "err");
-  return false;
- }
- if(taskName().indexOf("_Paikka_") !== -1 || taskName().endsWith("_Paikka")){
-  setSaveStatus("Ei tallennettu: tehtävänimi ei ole valmis", "err");
-  return false;
- }
+
  if(tila) currentTaskStatus = tila;
- const payload={
+
+ return {
   action:"saveAll",
   tehtavaNimi:taskName(),
   toiminto:toiminto||"Autosave",
@@ -1620,10 +1617,13 @@ async function saveToBackend(toiminto, tila){
   deviceInfo:navigator.platform || "",
   browserInfo:navigator.userAgent || ""
  };
+}
+
+async function postSavePayload(payload, showSaveOverlay){
+ if(showSaveOverlay) showLoading("Tallennetaan Google Sheetiin...");
+ setSaveStatus("Tallennetaan Google Sheetiin...", "wait");
+
  try{
-  const showSaveOverlay = toiminto !== "Autosave";
-  if(showSaveOverlay) showLoading("Tallennetaan Google Sheetiin...");
-  setSaveStatus("Tallennetaan Google Sheetiin...", "wait");
   const res = await fetch(API_URL, {
     method:"POST",
     headers:{"Content-Type":"text/plain;charset=utf-8"},
@@ -1632,12 +1632,14 @@ async function saveToBackend(toiminto, tila){
   const text = await res.text();
   let json = {};
   try{ json = JSON.parse(text); }catch(e){ json={ok:res.ok, raw:text}; }
+
   if(json.ok){
     lastBackendSave = Date.now();
     if(showSaveOverlay) hideLoading();
     setSaveStatus("Tallennettu Google Sheetiin " + new Date().toLocaleTimeString("fi-FI"), "ok");
     return true;
   }
+
   throw new Error(json.error || "Tallennus epäonnistui");
  }catch(err){
   try{
@@ -1658,116 +1660,61 @@ async function saveToBackend(toiminto, tila){
  }
 }
 
+async function saveToBackend(toiminto, tila){
+ if(!val("date") || !val("time") || !val("place")){
+  setSaveStatus("Ei tallennettu: aloita tehtävä ensin", "err");
+  return false;
+ }
+ if(taskName().indexOf("_Paikka_") !== -1 || taskName().endsWith("_Paikka")){
+  setSaveStatus("Ei tallennettu: tehtävänimi ei ole valmis", "err");
+  return false;
+ }
+
+ const isAutosave = (toiminto || "Autosave") === "Autosave";
+
+ // Jos tallennus on jo käynnissä, autosave ei saa lähteä rinnakkain.
+ // Merkitään vain, että nykyisen jälkeen tarvitaan yksi uusi autosave uusimmalla lomakedatalla.
+ if(saveInProgress){
+  if(isAutosave){
+    saveQueuedAfterCurrent = true;
+    setSaveStatus("Tallennus jonossa...", "wait");
+    return true;
+  }
+
+  // Manuaalinen/final-save odottaa ensin aiemman tallennuksen valmistumisen.
+  const previous = saveInProgress;
+  await previous;
+ }
+
+ const showSaveOverlay = !isAutosave;
+ const payload = buildSavePayload(toiminto, tila);
+
+ saveInProgress = (async()=>{
+   try{
+     const ok = await postSavePayload(payload, showSaveOverlay);
+
+     // Jos lomaketta muokattiin tallennuksen aikana, lähetetään yksi uusi autosave uusimmilla tiedoilla.
+     if(saveQueuedAfterCurrent && !taskClosing){
+       saveQueuedAfterCurrent = false;
+       const latestPayload = buildSavePayload("Autosave", currentTaskStatus || "Kesken");
+       await postSavePayload(latestPayload, false);
+     }
+
+     return ok;
+   }finally{
+     saveInProgress = null;
+   }
+ })();
+
+ return await saveInProgress;
+}
+
 function queueBackendSave(){
  if(taskClosing) return;
  if(!currentTaskName) return;
  if(!val("date") || !val("time") || !val("place")) return;
  clearTimeout(backendSaveTimer);
  backendSaveTimer = setTimeout(()=>saveToBackend("Autosave"), 1500);
-}
-
-async function finishTask(){
- if(taskClosing) return;
- taskClosing = true;
- clearTimeout(backendSaveTimer);
-
- const finishBtn = $("finishTaskBtn");
- const cancelBtn = $("cancelTaskBtn");
-
- if(finishBtn){
-   finishBtn.disabled = true;
-   finishBtn.textContent = "Tallennetaan...";
- }
- if(cancelBtn) cancelBtn.disabled = true;
-
- try{
-   sync();
-   calcMinutes();
-   calcRisk();
-   autosave();
-
-   currentTaskStatus = "Valmis";
-   const ok = await saveToBackend("FinalSave", "Valmis");
-
-   if(!ok){
-     throw new Error("Lopullinen tallennus epäonnistui");
-   }
-
-   try{
-     localStorage.removeItem("vpk_uas_" + taskName());
-     localStorage.removeItem("vpk_uas_last_task");
-     currentTaskName = "";
-   }catch(e){}
-
-   setSaveStatus("Tehtävä merkitty valmiiksi", "ok");
-   showLoading("Tehtävä tallennettu. Siirrytään uuteen tehtävään...");
-
-   setTimeout(()=>{
-     window.location.assign(window.location.origin + window.location.pathname + "?newtask=" + Date.now());
-   }, 1000);
-
- }catch(err){
-   taskClosing = false;
-   if(finishBtn){
-     finishBtn.disabled = false;
-     finishBtn.textContent = "Päätä tehtävä ja tallenna";
-   }
-   if(cancelBtn) cancelBtn.disabled = false;
-   hideLoading();
-   setSaveStatus("Lopullinen tallennus epäonnistui: tarkista yhteys ja yritä uudelleen", "err");
- }
-}
-
-async function cancelTask(){
- if(taskClosing) return;
- taskClosing = true;
- clearTimeout(backendSaveTimer);
-
- const cancelBtn = $("cancelTaskBtn");
- const finishBtn = $("finishTaskBtn");
-
- if(cancelBtn){
-   cancelBtn.disabled = true;
-   cancelBtn.textContent = "Tallennetaan...";
- }
- if(finishBtn) finishBtn.disabled = true;
-
- try{
-   sync();
-   calcMinutes();
-   calcRisk();
-   autosave();
-
-   currentTaskStatus = "Keskeytetty";
-   const ok = await saveToBackend("CancelTask", "Keskeytetty");
-
-   if(!ok){
-     throw new Error("Keskeytyksen tallennus epäonnistui");
-   }
-
-   try{
-     localStorage.removeItem("vpk_uas_" + taskName());
-     localStorage.removeItem("vpk_uas_last_task");
-     currentTaskName = "";
-   }catch(e){}
-
-   setSaveStatus("Tehtävä merkitty keskeytetyksi", "ok");
-   showLoading("Tehtävä tallennettu keskeytetyksi. Siirrytään uuteen tehtävään...");
-
-   setTimeout(()=>{
-     window.location.assign(window.location.origin + window.location.pathname + "?newtask=" + Date.now());
-   }, 1000);
-
- }catch(err){
-   taskClosing = false;
-   if(cancelBtn){
-     cancelBtn.disabled = false;
-     cancelBtn.textContent = "Keskeytä tehtävä ja tallenna";
-   }
-   if(finishBtn) finishBtn.disabled = false;
-   hideLoading();
-   setSaveStatus("Keskeytyksen tallennus epäonnistui: tarkista yhteys ja yritä uudelleen", "err");
- }
 }
 
 function setupOpenLogButton(){
